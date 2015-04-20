@@ -108,6 +108,104 @@ Character::isLowerCaseはstaticメソッドだから
 
 ## 3.2 Comparatorインタフェースを実装
 
+### 3.2.1 コンパレータを使ったソート
+
+List#sort()はリスト自体が書き換わってしまうけど、  
+List#stream().sorted()なら元のリストを壊さずに  
+ソート結果が手に入るよ
+
+並び替えの対象になるJavaBean
+
+```java
+public class Hero {
+    private final String name;
+    private final int power;
+    public Hero(final String name, final int power) {
+        this.name = name;
+        this.power = power;
+    }
+    public int powerDiff(final Hero other) {
+        return power - other.power;
+    }
+    public String toString() {
+        return String.format("%s さんの戦闘力は %d です。", name, power);
+    }
+}
+```
+
+```java
+final List<Hero> heros = Arrays.asList(
+        new Hero("あくましょうぐん", 10000),
+        new Hero("うぉーずまん", 100),
+        new Hero("ばっふぁろーまん", 1000)
+);
+heros.forEach(System.out::println);
+//あくましょうぐん さんの戦闘力は 10000 です。
+//うぉーずまん さんの戦闘力は 100 です。
+//ばっふぁろーまん さんの戦闘力は 1000 です。
+```
+
+元のリストは壊さずに戦闘力順リストを出力！
+
+```java
+List<Hero> sortedHeros = heros
+        .stream()
+        .sorted(
+                (hero1,hero2)->hero1.powerDiff(hero2)
+        )
+        .collect(Collectors.toList());
+sortedHeros.forEach(System.out::println);
+//うぉーずまん さんの戦闘力は 100 です。
+//ばっふぁろーまん さんの戦闘力は 1000 です。
+//あくましょうぐん さんの戦闘力は 10000 です。
+```
+
+メソッド参照だとみじかいよ
+
+```java
+List<Hero> sortedHeros = heros
+        .stream()
+        .sorted(Hero::powerDiff)
+        .collect(Collectors.toList());
+```
+
+ラムダだと逆にも書けるよ（メソッド参照はできないけど）
+
+```java
+List<Hero> sortedHeros = heros
+        .stream()
+        .sorted(
+                (hero1, hero2) -> hero2.powerDiff(hero1)
+        )
+        .collect(Collectors.toList());
+sortedHeros.forEach(System.out::println);
+//あくましょうぐん さんの戦闘力は 10000 です。
+//ばっふぁろーまん さんの戦闘力は 1000 です。
+//うぉーずまん さんの戦闘力は 100 です。
+```
+
+昇順と降順二つ書いた時になるべくコードの重複をなくす
+
+```java
+// 昇順
+Comparator<Hero> ascendingPower = (hero1,hero2)->hero1.powerDiff(hero2);
+
+// 降順
+Comparator<Hero> descendingPower = ascendingPower.reversed();
+```
+
+一番つよいのは？
+
+```java
+heros.stream()
+        .max(Hero::powerDiff)
+        .ifPresent(System.out::println);
+//あくましょうぐん さんの戦闘力は 10000 です。
+```
+
+min()やmax()はリストに値がないこともあるためOptionalを返します。  
+ifPresentは値がある時のみ実行します。
+
 ## 3.3 複数のプロパティによる流暢な比較
 
 ## 3.4 collectメソッドとCollectorsクラスの使用
