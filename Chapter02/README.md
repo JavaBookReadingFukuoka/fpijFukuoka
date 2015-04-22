@@ -5,8 +5,8 @@
 [Gistにコード例記述](https://gist.github.com/tksy/b1ff68427228ea303e37)
 
 ## 2.2 リストの変換
-
-
+コレクションの変換処理を、古典的な方法に変わってmap()メソッドを使用。<br>
+[Gistにコード例記述](https://gist.github.com/tksy/7db0545f6387a748eb5f)
 
 ## 2.3 要素の検索
 
