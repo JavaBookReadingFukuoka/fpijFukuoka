@@ -14,14 +14,14 @@ map()を通過するとラムダ式に渡した変換が行われると考える
 mapの中の引数はFunctionインタフェース。引数を一つ受け取って戻り値を返す。
 
 ## 2.3 要素の検索
-コレクションからの要素の検索を、filter()メソッドで実装。
+コレクションからの要素の検索を、filter()メソッドで実装。<br>
 [Gistにコード例記述](https://gist.github.com/tksy/0f485932249ac9c12228)
 
 filter()内のラムダ式の検査を満たす要素だけが通過できると考えると良い。<br>
 filterの中の引数はPredicateインタフェース。引数を一つ受け取ってbooleanの戻り値を返す。
 
 ## 2.4 ラムダ式の再利用
-ラムダ式は関数型インタフェースに保存可能。
+ラムダ式は関数型インタフェースに保存可能。<br>
 [Gistにコード例記述](https://gist.github.com/tksy/0e633b6d85d543621301)
 
 いくつか例
@@ -33,8 +33,11 @@ final Function<String, String> toUpperCaseFunction = name -> name.toUpperCase();
 ```
 
 ## 2.5 静的スコープとクロージャ
+ラムダ式を返す関数を利用する。<br>
+レキシカルスコープ（静的スコープ・lexical scope）とクロージャの話。<br>
+[Gistにコード例記述](https://gist.github.com/tksy/184c5f75570e9d99093d)
 
-
+JavaScriptのクロージャと同様に考えてよいのかしら？
 
 ## 2.6 要素を１つ選択
 
