@@ -40,8 +40,16 @@ final Function<String, String> toUpperCaseFunction = name -> name.toUpperCase();
 JavaScriptのクロージャと同様に考えてよいのかしら？
 
 ## 2.6 要素を１つ選択
+[findFirst()メソッド](http://docs.oracle.com/javase/jp/8/docs/api/java/util/stream/Stream.html#findFirst--)、[Optional](http://docs.oracle.com/javase/jp/8/docs/api/java/util/Optional.html)を利用する。
+[Gistにコード例記述](https://gist.github.com/tksy/4e97276c6e1cfd55eba7)
 
+```Java
+Optional<String> foundName = stream.findFirst();
+System.out.println(foundName.orElse("無かった時"));
+```
 
+類似っぽいメソッドに[findAny()](http://docs.oracle.com/javase/jp/8/docs/api/java/util/stream/Stream.html#findAny--)がある。<br>
+説明によると、こちらは結果が決定的にならない模様。並列向けらしい。<br>何でも良いから結果があったら返してよ！って場合に使うものだと思われ。
 
 ## 2.7 コレクションを単一の値に集約（reduce）
 
