@@ -69,8 +69,16 @@ reduceにはメソッドが３つある。<br>
 さらに言うと、そもそもreduceを使わずに次のcollectで良いじゃんという話もあるようで…
 
 ## 2.8 要素の結合
+[String.join()メソッド](http://docs.oracle.com/javase/jp/8/docs/api/java/lang/String.html#join-java.lang.CharSequence-java.lang.CharSequence...-)、[collect()メソッド](http://docs.oracle.com/javase/jp/8/docs/api/java/util/stream/Stream.html#collect-java.util.stream.Collector-)を利用する。<br>
+[Gistにコード例記述](https://gist.github.com/tksy/5621f25fd7bb9dd750b9)
 
+```Java
+String joined1 = String.join(", ", friends);
+String joined2 = friends.stream().collect(Collectors.joining(", "));
+```
 
+文字列結合のための辛いループ処理から解放されたよ！<br>
+内部的には[StringJoiner](http://docs.oracle.com/javase/jp/8/docs/api/java/util/StringJoiner.html)。
 
 ## 2.9 まとめ
 
