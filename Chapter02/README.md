@@ -52,8 +52,21 @@ System.out.println(foundName.orElse("無かった時"));
 説明によると、こちらは結果が決定的にならない模様。並列向けらしい。<br>何でも良いから結果があったら返してよ！って場合に使うものだと思われ。
 
 ## 2.7 コレクションを単一の値に集約（reduce）
+[sum()メソッド](http://docs.oracle.com/javase/jp/8/docs/api/java/util/stream/IntStream.html#sum--)、[reduce()メソッド](http://docs.oracle.com/javase/jp/8/docs/api/java/util/stream/Stream.html#reduce-java.util.function.BinaryOperator-)を利用する。<br>
+[Gistにコード例記述](https://gist.github.com/tksy/9344c87af83c4dc8beb9)
 
+```Java
+Optional<String> longName = friends.stream()
+                .reduce((name1, name2) -> name1.length() >= name2.length() ? name1 : name2);
+```
 
+reduceにはメソッドが３つある。<br>
+１つ目はOptionalを返す。引数はBinaryOperator。上記のように引数２つをもとに結果１つを返す。<br>
+２つ目はOptional無し値を返す。引数は初期値＋BinaryOperator。初期値があればOptionalで無くてよいわけで。<br>
+３つ目は型変換可能だが複雑。Optional無し値を返す。引数は初期値＋BiFunction＋BinaryOperator。<br>
+たいていの場合、無理してこれを使うよりmapメソッドを間に挟んだ方が良さそう。
+
+さらに言うと、そもそもreduceを使わずに次のcollectで良いじゃんという話もあるようで…
 
 ## 2.8 要素の結合
 
