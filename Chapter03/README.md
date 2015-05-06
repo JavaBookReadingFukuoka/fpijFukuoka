@@ -208,6 +208,54 @@ ifPresentは値がある時のみ実行します。
 
 ## 3.3 複数のプロパティによる流暢な比較
 
+比較式をラムダ式で作成するより
+
+```java
+Comparator<Hero> ascendingPower = (hero1,hero2)->hero1.powerDiff(hero2);
+```
+
+Comparator#comparing コンビニエンスメソッドを使う  
+
+```java
+import static java.util.Comparator.comparing;
+
+public static <T, U extends Comparable<? super U>> Comparator<T> comparing(
+        Function<? super T, ? extends U> keyExtractor)
+{
+    Objects.requireNonNull(keyExtractor);
+    return (Comparator<T> & Serializable)
+        (c1, c2) -> keyExtractor.apply(c1).compareTo(keyExtractor.apply(c2));
+}
+```
+
+引数の関数(Function)はラムダ式で書くか
+
+```java
+Function<Hero, Integer> byPower = hero -> hero.getPower();
+List<Hero> sortedHeros = heros.stream()
+        .sorted(comparing(byPower));
+```
+
+メソッド参照を使う
+
+```java
+List<Hero> sortedHeros = heros.stream()
+        .sorted(comparing(Hero::getPower));
+```
+
+thenComparingで並び替え条件を追加する
+
+```java
+List<Hero> sortedHeros = heros.stream()
+        .sorted(
+          comparing(Hero::getPower)
+          .thenComparing(Hero::getName)
+        );
+```
+
+パワー順に並べて同じ場合は名前順にならべる
+
+
 ## 3.4 collectメソッドとCollectorsクラスの使用
 
 ## 3.5 ディレクトリの全ファイルをリスト
