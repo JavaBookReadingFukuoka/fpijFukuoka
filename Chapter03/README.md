@@ -258,6 +258,166 @@ List<Hero> sortedHeros = heros.stream()
 
 ## 3.4 collectメソッドとCollectorsクラスの使用
 
+↓のforEachをcollectを使ってなおします。
+```java
+private final List<Hero> heros = Arrays.asList(
+        new Hero("あくましょうぐん", 10000),
+        new Hero("ろびんますく", 100),
+        new Hero("うぉーずまん", 100),
+        new Hero("ばっふぁろーまん", 1000)
+);
+
+List<Hero> power1000AndOver = new ArrayList<Hero>();
+
+heros.stream()
+        .filter(hero -> hero.getPower() >= 1000)
+        .forEach(hero -> power1000AndOver.add(hero));
+
+power1000AndOver.forEach(System.out::println);
+//あくましょうぐん さんの戦闘力は 10000 です。
+//ばっふぁろーまん さんの戦闘力は 1000 です。
+```
+
+forEachだとArrayListのインスタンスを使うので
+並列処理でスレッドセーフの問題が...
+
+この命令型のコードを宣言型に
+
+```java
+List<Hero> power1000AndOver = heros.stream()
+        .filter(hero -> hero.getPower() >= 1000)
+        .collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
+```
+
+collectの引数は左から...
+
+- サプライヤ：コンテナの生成方法
+- アキュムレータ：追加方法
+- コンバイナ：他のコンテナとの結合方法
+
+長い...  
+けどコード内でArrayListの状態変更を行わない  
+スレッドセーフになるよ  
+
+でも長いのでCollectors#toListを使う
+
+```java
+public static <T>
+Collector<T, ?, List<T>> toList() {
+    return new CollectorImpl<>(
+      (Supplier<List<T>>) ArrayList::new,
+       List::add,
+       (left, right) -> { left.addAll(right); return left; },
+       CH_ID);
+}
+```
+
+```java
+List<Hero> power1000AndOver = heros.stream()
+        .filter(hero -> hero.getPower()>=1000)
+        .collect(Collectors.toList());
+
+power1000AndOver.forEach(System.out::println);
+```
+
+Collectorsには他にも色々あるよ
+
+- toSet
+- toMap
+- joining
+- mapping
+- collectingAndThen
+- minBy
+- maxBy
+- groupingBy
+
+groupingByでパワー別グループに分けてみた
+
+```java
+private final List<Hero> heros = Arrays.asList(
+        new Hero("あくましょうぐん", 10000),
+        new Hero("あしゅらまん", 200),
+        new Hero("ろびんますく", 100),
+        new Hero("うぉーずまん", 100),
+        new Hero("うるふまん", 90),
+        new Hero("ばっふぁろーまん", 1000)
+);
+
+Map<Integer,List<Hero>> powerGroup = heros.stream()
+        .collect(Collectors.groupingBy(Hero::getPower));
+
+powerGroup.entrySet().forEach(System.out::println);
+
+// 10000=[あくましょうぐん さんの戦闘力は 10000 です。]
+// 100=[ろびんますく さんの戦闘力は 100 です。, うぉーずまん さんの戦闘力は 100 です。]
+// 1000=[ばっふぁろーまん さんの戦闘力は 1000 です。]
+// 200=[あしゅらまん さんの戦闘力は 200 です。]
+// 90=[うるふまん さんの戦闘力は 90 です。]
+
+```
+
+
+さらにmappingで名前だけ抽出
+
+```java
+Map<Integer,List<String>> powerGroupNameList = heros.stream()
+        .collect(Collectors.groupingBy(Hero::getPower,
+                Collectors.mapping(Hero::getName,Collectors.toList())));
+
+powerGroupNameList.entrySet().forEach(System.out::println);
+
+// 10000=[あくましょうぐん]
+// 100=[ろびんますく, うぉーずまん]
+// 1000=[ばっふぁろーまん]
+// 200=[あしゅらまん]
+// 90=[うるふまん]
+```
+
+ちょっと寄り道(mappingだけ試した)
+
+```java
+List<String> nameList = heros.stream()
+        .collect(Collectors.mapping(Hero::getName, Collectors.toList()));
+
+nameList.forEach(System.out::println);
+
+// あくましょうぐん
+// あしゅらまん
+// ろびんますく
+// うぉーずまん
+// うるふまん
+// ばっふぁろーまん
+```
+
+ちょっと寄り道(BinaryOperator.maxBy)で最強を探す
+
+```java
+Optional<Hero> saikyo = heros.stream()
+        .reduce(BinaryOperator.maxBy(Hero::powerDiff));
+
+saikyo.ifPresent(System.out::println);
+// あくましょうぐん さんの戦闘力は 10000 です。
+```
+
+頭文字が同じで一番強いのを探す
+
+```java
+Map<String, Optional<Hero>> saikyoInGroup = heros.stream()
+        .collect(Collectors.groupingBy(
+                hero -> hero.getName().substring(0, 1),
+                Collectors.reducing(
+                        BinaryOperator.maxBy(Hero::powerDiff)
+                )
+        ));
+
+saikyoInGroup.entrySet().forEach(System.out::println);
+
+// ば=Optional[ばっふぁろーまん さんの戦闘力は 1000 です。]
+// あ=Optional[あくましょうぐん さんの戦闘力は 10000 です。]
+// う=Optional[うぉーずまん さんの戦闘力は 100 です。]
+// ろ=Optional[ろびんますく さんの戦闘力は 100 です。]
+```
+
 ## 3.5 ディレクトリの全ファイルをリスト
 
 ## 3.6 ディレクトリの特定のファイルだけをリスト
