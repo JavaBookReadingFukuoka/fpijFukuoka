@@ -229,7 +229,6 @@ public static <T, U extends Comparable<? super U>> Comparator<T> comparing(
 ```
 
 引数の関数(Function)はラムダ式で書くか
-
 ```java
 Function<Hero, Integer> byPower = hero -> hero.getPower();
 List<Hero> sortedHeros = heros.stream()
@@ -272,6 +271,7 @@ List<Hero> power1000AndOver = new ArrayList<Hero>();
 heros.stream()
         .filter(hero -> hero.getPower() >= 1000)
         .forEach(hero -> power1000AndOver.add(hero));
+
 
 power1000AndOver.forEach(System.out::println);
 //あくましょうぐん さんの戦闘力は 10000 です。
@@ -419,6 +419,40 @@ saikyoInGroup.entrySet().forEach(System.out::println);
 ```
 
 ## 3.5 ディレクトリの全ファイルをリスト
+
+外部イテレータを使ってファイル一覧表示
+
+```java
+File dir = new File(".");
+String[] fileNames = dir.list();
+for (String fileName:fileNames){
+    System.out.println("fileName="+fileName);
+}
+```
+
+streamを使って関数型スタイルで
+
+```java
+try(Stream<Path> stream = Files.list(Paths.get("."))){
+    stream.forEach(System.out::println);
+}catch (IOException e){
+    System.out.println("error!");
+}
+```
+
+ファイルのみを絞り込んで表示する場合
+
+```java
+try(Stream<Path> stream = Files.list(Paths.get("."))){
+    stream
+            .filter(Files::isRegularFile)
+            .forEach(System.out::println);
+}catch (IOException e){
+    System.out.println("error!");
+}
+```
+
+
 
 ## 3.6 ディレクトリの特定のファイルだけをリスト
 
