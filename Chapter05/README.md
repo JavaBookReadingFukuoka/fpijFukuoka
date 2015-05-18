@@ -19,6 +19,8 @@
 
 ### 5.1.1 問題を覗いてみる
 
+[resource/fpij/FileWriterExample.java](https://github.com/k--kato/fpijFukuoka/blob/feature/Chapter05/Chapter05/resources/fpij/FileWriterExample.java)
+
 ### 5.1.2 リソースを閉じる
 
 ### 5.1.3 確実にリソースを開放する
