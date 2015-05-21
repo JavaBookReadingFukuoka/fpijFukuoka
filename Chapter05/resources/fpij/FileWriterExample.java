@@ -1,22 +1,51 @@
+import java.io.FileWriter;
 import java.io.IOException;
 
 public class FileWriterExample {
     private final FileWriter writer;
+    private static boolean isClosed = false;
+    private static long totalBytes = 0l;
 
     public FileWriterExample(final String fileName) throws IOException {
-        writer = new FileWriterExample(fileName);
+        writer = new FileWriter(fileName);
     }
+
     public void writeStuff(final String message) throws IOException {
         writer.write(message);
+        totalBytes += message.getBytes().length;
+        System.out.println(String.format("%d \t[B]", totalBytes));
     }
-    public void finalize() throws IOException {
-        writer.close();
-    }
-    //...
 
-     public static void main(final String[] args) throws IOException {
-         final FileWriterExample wirterExample = new FileWriterExample("peekaboo.txt");
-         wirterExample.writeStuff("peek-a-boo");
+    public void finalize() throws IOException {
+        System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
+        writer.close();
+        isClosed = true;
+    }
+
+    public void close() throws IOException {
+        System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
+        writer.close();
+        isClosed = true;
+    }
+
+    public static void main(final String[] args) throws IOException, InterruptedException {
+        while (!isClosed) {
+            /*================================================================================
+             * writerは閉じられない
+             *  JVMは大きなメモリを抱えているので，GCを実行する必要が発生しない。
+             *  GC（finalize）はいつ発生するのか？
+             *  -Xms1m -Xmx1mで実験してみよう！
+             *===============================================================================*/
+            final FileWriterExample writerExample = new FileWriterExample("peekaboo.txt");
+            writerExample.writeStuff("peek-a-boo");
+            Thread.sleep(100);
+        }
+
+         /*================================================================================
+          * 明示的に開放する
+          *  例外発生時にもcloseは呼ばれますか？ - NO!
+          *===============================================================================*/
+        //writerExample.close();
 
          /*================================================================================
           * peek-a-booとは？
@@ -27,5 +56,5 @@ public class FileWriterExample {
           *  再会を予期した後に、「ばあ」と予期通りに再会が叶う事に喜びや興奮を感じているものと思われる。
           *  - Wikipedia
           *================================================================================*/
-     }
+    }
 }

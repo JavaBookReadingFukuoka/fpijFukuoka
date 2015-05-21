@@ -1,6 +1,6 @@
 # ５章　外部リソースを扱う
 
- 　「外部リソース」を使用する場合は，ガベージコレクション(GC)は開発者の責任の範囲です。
+「外部リソース」を使用する場合は，ガベージコレクション(GC)は開発者の責任の範囲。
 
 * 外部リソースとは?
   * データベース接続
@@ -25,7 +25,7 @@ JJUG CCC 2015 Springのケース：
 * **JUGGの発表資料「ほんとうに便利だった業務で使えるJava SE8新機能」でファイル処理のリソースの開放漏れ？**
   * 業務にJava8を導入したJUGGの発表が話題に！
   * 発表翌日（2015/04/12）に，「33ページのコードにはリソース解放漏れがあります」と指摘が発生
-  * 登壇者は「33Pで説明したいことの本質ではなかったため、意図して省きました。セッションでは39Pで説明しました」とコメントしました
+  * 登壇者は「33Pで説明したいことの本質ではなかったため、意図して省きました。セッションでは39Pで説明しました」とコメントした
 
     ```java
     Files.lines(Paths.get("sample.txt"))
@@ -34,12 +34,12 @@ JJUG CCC 2015 Springのケース：
 
 僕のケース：
 
-* **監視バッチでORA-01000:最大オープン・カーソル数を超えましたが発生**
+* **バッチで「ORA-01000:最大オープン・カーソル数を超えました」発生**
   * 5秒間隔でOracleのDBにアクセスして，データを監視するバッチ
-  * UT（単体テスト）でコードレビューを担当し，「帰社前に起動して，翌朝例外がなければ良いんじゃない」「何もありませんでした」「OK，コンピュータ」
-  * IT（結合テスト）で「ORA-01000:最大オープン・カーソル数を超えましたが発生」が発生していると，プロパーから指摘
+  * コードレビューを担当し，「帰社前に起動して，翌朝例外がなければ良いんじゃない」「何もありませんでした」「OK，コンピュータ」
+  * 結合テストで「ORA-01000:最大オープン・カーソル数を超えましたが発生」が発生していると，プロパーから指摘
   * 反省文
-  * 原因は，単純なリソースの開放漏れ
+  * 原因は，リソースの開放漏れ
   * なぜ気づかなかったのか？ try-catchのcatchで例外を潰していた…
 
 - 参考
@@ -48,9 +48,13 @@ JJUG CCC 2015 Springのケース：
 
 ### 5.1.1 問題を覗いてみる
 
-[resource/fpij/FileWriterExample.java](https://github.com/k--kato/fpijFukuoka/blob/feature/Chapter05/Chapter05/resources/fpij/FileWriterExample.java)
+* JVMが十分にメモリを確保しているので，GC（finalize）が呼ばれない
+* -Xms1m -Xmx1mで実験してみよう！ ([resource/fpij/FileWriterExample.java](https://github.com/k--kato/fpijFukuoka/blob/feature/Chapter05/Chapter05/resources/fpij/FileWriterExample.java))
 
 ### 5.1.2 リソースを閉じる
+
+* close()を呼びだそう ([resource/fpij/FileWriterExample.java](https://github.com/k--kato/fpijFukuoka/blob/feature/Chapter05/Chapter05/resources/fpij/FileWriterExample.java))
+* そのclose()，例外が発生した場合も確実に呼ばれますか？ - NO!
 
 ### 5.1.3 確実にリソースを開放する
 
