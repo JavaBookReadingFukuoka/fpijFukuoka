@@ -1,15 +1,13 @@
-package Chapter05.resources.jpij;
-
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class FileWriterARM_5_1_3 {
+public class FileWriterARM_5_1_4 implements AutoCloseable {
     private final FileWriter writer;
     private final long id;
 
     private static long totalInstances = 0l;
 
-    public FileWriterARM_5_1_3(final String fileName) throws IOException {
+    public FileWriterARM_5_1_4(final String fileName) throws IOException {
         writer = new FileWriter(fileName);
         id = ++totalInstances;
         System.out.println(String.format("[Create #]\t %05d", id));
@@ -25,16 +23,13 @@ public class FileWriterARM_5_1_3 {
     }
 
     public static void main(final String[] args) throws IOException, InterruptedException {
-        final FileWriterARM_5_1_3 writerExample = new FileWriterARM_5_1_3("peekaboo.txt");
-
-        try {
+        try (final FileWriterARM_5_1_4 writerExample = new FileWriterARM_5_1_4("peekaboo.txt")) {
             writerExample.writeStuff("peek-a-boo");
-        } finally {
-            writerExample.close();
         }
+
          /*================================================================================
-          * 例外が発生してもfinallyで確実にリソースを閉じることができた
-          *  しかし，コードからは臭いが漂っている…
+          * try-with-resourcesを使うと，自動でclose()が呼ばれた！
+          *  しかし，全ての開発者がARM(Automatic Resource Management)を忘れず書けるか？
           *===============================================================================*/
     }
 }
