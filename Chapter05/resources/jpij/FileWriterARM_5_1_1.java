@@ -1,31 +1,30 @@
+package Chapter05.resources.jpij;
+
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class FileWriterExample {
-    private final FileWriter writer;
-    private static boolean isClosed = false;
-    private static long totalBytes = 0l;
+public class FileWriterARM_5_1_1 {
 
-    public FileWriterExample(final String fileName) throws IOException {
+    private final FileWriter writer;
+    private final long id;
+
+    private static boolean isClosed = false;
+    private static long totalInstances = 0l;
+
+    public FileWriterARM_5_1_1(final String fileName) throws IOException {
         writer = new FileWriter(fileName);
+        id = ++totalInstances;
+        System.out.println(String.format("[Create #]\t %05d", id));
     }
 
     public void writeStuff(final String message) throws IOException {
         writer.write(message);
-        totalBytes += message.getBytes().length;
-        System.out.println(String.format("%d \t[B]", totalBytes));
     }
 
     public void finalize() throws IOException {
-        System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
         writer.close();
         isClosed = true;
-    }
-
-    public void close() throws IOException {
-        System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
-        writer.close();
-        isClosed = true;
+        System.out.println(String.format("[Finalize #]\t %05d", id));
     }
 
     public static void main(final String[] args) throws IOException, InterruptedException {
@@ -36,16 +35,10 @@ public class FileWriterExample {
              *  GC（finalize）はいつ発生するのか？
              *  -Xms1m -Xmx1mで実験してみよう！
              *===============================================================================*/
-            final FileWriterExample writerExample = new FileWriterExample("peekaboo.txt");
+            final FileWriterARM_5_1_1 writerExample = new FileWriterARM_5_1_1("peekaboo.txt");
             writerExample.writeStuff("peek-a-boo");
             Thread.sleep(100);
         }
-
-         /*================================================================================
-          * 明示的に開放する
-          *  例外発生時にもcloseは呼ばれますか？ - NO!
-          *===============================================================================*/
-        //writerExample.close();
 
          /*================================================================================
           * peek-a-booとは？
@@ -55,6 +48,6 @@ public class FileWriterExample {
           *  いないいないばあをしている相手を他者として認識し、「いないいない」という一時的な分離から
           *  再会を予期した後に、「ばあ」と予期通りに再会が叶う事に喜びや興奮を感じているものと思われる。
           *  - Wikipedia
-          *================================================================================*/
+          *===============================================================================*/
     }
 }
