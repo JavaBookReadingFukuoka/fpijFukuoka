@@ -1,5 +1,3 @@
-package Chapter05.resources.jpij;
-
 import java.io.FileWriter;
 import java.io.IOException;
 
