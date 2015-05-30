@@ -1,3 +1,5 @@
+package Chapter05.resources;
+
 import java.io.IOException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
