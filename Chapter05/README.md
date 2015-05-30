@@ -150,14 +150,62 @@ use("eam.txt", writerEAM -> {
 
 ## 5.4 簡潔な例外テストの生成
 
+Java 5でアノテーションが導入されると，JUnitは即座にそれを採用した。
+アノテーションによるテストは簡潔すぎてわかりづらい。ラムダ式で変える。
+
 ### 5.4.1 try/catchで例外テスト
+
+try/catchを使ったテストはとても冗長。
+
+* [RodCutterTest_5_4_1.java](https://github.com/k--kato/fpijFukuoka/blob/feature/Chapter05/resources/fpij/RodCutterTest_5_4_1.java)
 
 ### 5.4.2 アノテーションを使った例外テスト
 
+アノテーションを使ったテストは意図しないメソッドで例外が発生してもテストに合格する可能性がある。
+
+* [RodCutterTest_5_4_2.java](https://github.com/k--kato/fpijFukuoka/blob/feature/Chapter05/resources/fpij/RodCutterTest_5_4_2.java)
+
 ### 5.4.3 例外テストにラムダ式を使用
+
+ラムダ式を使うと簡潔で，意図したメソッドでの例外でテストが検証される。
+
+* [RodCutterTest_5_4_3.java](https://github.com/k--kato/fpijFukuoka/blob/feature/Chapter05/resources/fpij/RodCutterTest_5_4_3.java)
 
 ### 5.4.4 テストの実行
 
+どのテストコードが一番良い（正確性，保守性，可読性等）ですか？
+
+```java
+  @Test public void VerboseExceptionTest() {
+    rodCutter.setPrices(prices);
+    try {
+      rodCutter.maxProfit(0);
+      fail("Expected exception for zero length");
+    } catch(RodCutterException ex) {
+      assertTrue("expected", true);
+    }
+  }
+```
+
+```java
+  @Test(expected = RodCutterException.class) 
+  public void TerseExceptionTest() {
+    rodCutter.setPrices(prices);
+    rodCutter.maxProfit(0);
+  }
+```
+
+```java
+  @Test 
+  public void ConciseExceptionTest() {
+    rodCutter.setPrices(prices);
+    assertThrows(RodCutterException.class, () -> rodCutter.maxProfit(0));
+  }
+```
+
 ## 5.5 まとめ
 
+アプリケーションで外部リソースを使用する場合は，GCはユーザの責任。Java 8のラムダ式でExecute Around Methodパターンを使うと，
+リソースの解放をラップすることができる。
 
+**NO MORE メモリリーク**

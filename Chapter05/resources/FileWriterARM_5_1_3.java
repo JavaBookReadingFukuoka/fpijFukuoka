@@ -1,3 +1,5 @@
+package Chapter05.resources;
+
 import java.io.FileWriter;
 import java.io.IOException;
 
