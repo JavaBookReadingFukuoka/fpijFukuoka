@@ -456,6 +456,81 @@ try(Stream<Path> stream = Files.list(Paths.get("."))){
 
 ## 3.6 ディレクトリの特定のファイルだけをリスト
 
+匿名クラスで書いたら長い...
+
+```bat
+src\com\company\chapter3 のディレクトリ
+Chap31.java
+Chap36_1FileList.java              Chap36_2DirectoryStream.java       Chap36_3FileIsHidden.java
+Chap37_1getSubDirectoryList.java   Chap37_2flatMap.java               Chap38_1FileWatch.java
+Hero.java                          Sample.java                        Sample36.java
+```
+
+
+```java
+File file = new File("src/com/company/chapter3");
+
+final String[] filesNm = file.list(
+        new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.startsWith("Chap36");
+            }
+        }
+);
+
+for (String fileNm:filesNm){
+    System.out.println(fileNm);
+}
+
+// -> Chap36_1FileList.java
+// -> Chap36_2DirectoryStream.java
+// -> Chap36_3FileIsHidden.java
+```
+
+ラムダ式でだとすっきり書ける
+
+```java
+final String[] filesNm2 = file.list(
+        (dir,name)->name.startsWith("Chap36")
+);
+for (String fileNm:filesNm2){
+    System.out.println(fileNm);
+}
+
+
+// -> Chap36_1FileList.java
+// -> Chap36_2DirectoryStream.java
+// -> Chap36_3FileIsHidden.java
+```
+
+DirecctoryStreamを使うよ
+
+```java
+Files.newDirectoryStream(
+        Paths.get("src/com/company/chapter3"),
+        path->path.getFileName().toString().startsWith("Chap36")
+).forEach(System.out::println);
+
+// -> src\com\company\chapter3\Chap36_1FileList.java
+// -> src\com\company\chapter3\Chap36_2DirectoryStream.java
+// -> src\com\company\chapter3\Chap36_3FileIsHidden.java
+```
+
+[newDirectoryStream](https://docs.oracle.com/javase/jp/7/api/java/nio/file/Files.html#newDirectoryStream%28java.nio.file.Path%29)
+
+ファイル抽出でメソッド参照
+
+```java
+final File[] files3 = new File("src/com/company").
+        listFiles(File::isFile);
+for (File f : files3) {
+    System.out.println(f.getName());
+}
+```
+
+
+
 ## 3.7 flatMapで直下のサブディレクトリをリスト
 
 ## 3.8 ファイルの変更を監視
