@@ -1,5 +1,4 @@
 # ４章　ラムダ式で設計する
-test
 
 ## 4.1 ラムダ式を使った関心の分離
 
@@ -12,7 +11,7 @@ test
 
 結果としてできたクラス定義はこんな感じ。
 
-```
+```java
 public final class AssetUtil {
      public int totalAssetValues(List<Asset> assets) {/* 省略 */}
      public int totalBondValues(List<Asset> assets) {/* 省略 */}
@@ -22,13 +21,13 @@ public final class AssetUtil {
 
 使い方は、
 
-```
+```java
 System.out.println("Total of all assets: " + AssetUtil.totalAssetValues(assets));
 System.out.println("Total of bonds: " + AssetUtil.totalBondValues(assets));
 System.out.println("Total of stocks: " + AssetUtil.totalStockValues(assets));
 ```
 
-きつい匂いがしてくる。本物のJava使いならこう書くはずだろう？
+きつい匂いがしてくる。本物のJava使いならこう書くはずだろう。
 
 ```java
 public final class AssetUtil {
@@ -62,7 +61,7 @@ AssetSelectorインタフェースを使えば「何を合計するか」を分�
 
 三つのメソッドをインタフェースを使って一つにし、「何を合計するか」を分離したところまでは良かったのですが、明らかにラムダ式の出番です。AssetSelectorは定義済みのjava.util.function.Predicateインタフェースを再利用し、次のように書きましょう。
 
-```
+```java
 public final class AssetUtil {
      public int totalAssetValues(List<Asset> assets, Predicate<Asset> assetSelector) {/* 省略 */}
 }
