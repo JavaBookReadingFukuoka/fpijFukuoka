@@ -50,19 +50,19 @@ JJUG CCC 2015 Springのケース：
 外部リソースを解放するためにfinalizeを実装したが，JVMが十分にメモリを確保しているので，finalizeが呼ばれず，アプリの動作が不安定になる問題。
 
 メモリの確保が不十分な状態 "-Xms1m -Xmx1m" でGC(finalize)が呼ばれる様子を見てみよう。 
-  * [FileWriterARM_5_1_1.java](https://github.com/k--kato/fpijFukuoka/blob/feature/Chapter05/resources/fpij/FileWriterARM_5_1_1.java)
+  * [FileWriterARM_5_1_1.java](./resources/FileWriterARM_5_1_1.java)
 
 ### 5.1.2 リソースを閉じる
 
 JVMに任せたfinalizeは不安定なので，リソース解放は明示的にclose()を呼びだそう。 
-  * [FileWriterARM_5_1_2.java](https://github.com/k--kato/fpijFukuoka/blob/feature/Chapter05/resources/fpij/FileWriterARM_5_1_2.java)
+  * [FileWriterARM_5_1_2.java](./resources/FileWriterARM_5_1_2.java)
 
 close()は例外が発生した場合も確実に呼ばれるのか？ - **NO!**
 
 ### 5.1.3 確実にリソースを解放する
 
 **try-finally**で確実にリソースを閉じる。
-  * [FileWriterARM_5_1_3.java](https://github.com/k--kato/fpijFukuoka/blob/feature/Chapter05/resources/fpij/FileWriterARM_5_1_3.java)
+  * [FileWriterARM_5_1_3.java](./resources/FileWriterARM_5_1_3.java)
 
 外部リソースの操作中に例外が発生しても確実にリソースを解放できるようになった。
 
@@ -75,7 +75,7 @@ Java 7で導入された**ARM(Automatic Resource Management)**を使えばOK？
 * ARMとは？
   * AutoClosableをimplementsすると，JVMによってclose()が自動で呼ばれる仕組み。開発者は明示的にcloseを書かなくても良い
     * try-with-resources構文と呼ぶ
-    * [FileWriterARM_5_1_4.java](https://github.com/k--kato/fpijFukuoka/blob/feature/Chapter05/resources/fpij/FileWriterARM_5_1_4.java)
+    * [FileWriterARM_5_1_4.java](./resources/FileWriterARM_5_1_4.java)
   * ARMは非常に完結で魅力的
 
 しかし，**ARMは開発者が忘れずにtry-with-resourcesを記述しなければいけない**。
@@ -123,7 +123,7 @@ public static void use(final String fileName, final UseInstance<FileWriterEAM_5_
 ### 5.2.3 インスタンス解放に使用
 
 ラムダ式はブロック（{ }）で複数行のコードも書くことができる
-  * [FileWriterARM_5_2_3.java](https://github.com/k--kato/fpijFukuoka/blob/feature/Chapter05/resources/fpij/FileWriterEAM_5_2_3.java)
+  * [FileWriterARM_5_2_3.java](./resources/FileWriterEAM_5_2_3.java)
 
 ```java
 use("eam.txt", writerEAM -> {
@@ -145,7 +145,7 @@ use("eam.txt", writerEAM -> {
 
 ロックしたら確実にアンロックする必要がある。（Aしたら確実にBする必要がある）Execute Around Methodパターンが使えそう！
 
-  * [Locking_5_3.java](https://github.com/k--kato/fpijFukuoka/blob/feature/Chapter05/resources/fpij/Locker_5_3.java)
+  * [Locking_5_3.java](./resources/Locker_5_3.java)
 
 
 ## 5.4 簡潔な例外テストの生成
@@ -157,19 +157,19 @@ Java 5でアノテーションが導入されると，JUnitは即座にそれを
 
 try/catchを使ったテストはとても冗長。
 
-* [RodCutterTest_5_4_1.java](https://github.com/k--kato/fpijFukuoka/blob/feature/Chapter05/resources/fpij/RodCutterTest_5_4_1.java)
+* [RodCutterTest_5_4_1.java](./resources/RodCutterTest_5_4_1.java)
 
 ### 5.4.2 アノテーションを使った例外テスト
 
 アノテーションを使ったテストは意図しないメソッドで例外が発生してもテストに合格する可能性がある。
 
-* [RodCutterTest_5_4_2.java](https://github.com/k--kato/fpijFukuoka/blob/feature/Chapter05/resources/fpij/RodCutterTest_5_4_2.java)
+* [RodCutterTest_5_4_2.java](./resources/RodCutterTest_5_4_2.java)
 
 ### 5.4.3 例外テストにラムダ式を使用
 
 ラムダ式を使うと簡潔で，意図したメソッドでの例外でテストが検証される。
 
-* [RodCutterTest_5_4_3.java](https://github.com/k--kato/fpijFukuoka/blob/feature/Chapter05/resources/fpij/RodCutterTest_5_4_3.java)
+* [RodCutterTest_5_4_3.java](./resources/RodCutterTest_5_4_3.java)
 
 ### 5.4.4 テストの実行
 
