@@ -533,6 +533,131 @@ for (File f : files3) {
 
 ## 3.7 flatMapで直下のサブディレクトリをリスト
 
+一階層下まで一覧取得をforで頑張ってみたけれど...
+
+```java
+final String TEST_PATH = "src/com/company";
+List<File> files = new ArrayList<>();
+File[] startDir = new File(TEST_PATH).listFiles();
+for (File file : startDir) {
+    File[] subDir = file.listFiles();
+    if (subDir != null) {
+        files.addAll(Arrays.asList(subDir));
+    } else {
+        files.add(file);
+    }
+}
+files.stream().forEach(System.out::println);
+```
+
+flatMap()メソッド(マッピング後に平坦化)を使用すると
+
+
+https://docs.oracle.com/javase/jp/8/api/java/util/stream/Stream.html#flatMap-java.util.function.Function-
+> <R> Stream<R> flatMap(Function<? super T,? extends Stream<? extends R>> mapper)
+> このストリームの各要素をマップされたストリーム
+> ...(マップ先ストリームがnullの場合はかわりに空のストリームが使用されます。)
+
+https://docs.oracle.com/javase/jp/8/api/java/util/stream/Stream.html#of-T-
+> static <T> Stream<T> of(T t)
+> 単一要素を含む順次Streamを返します。
+
+https://docs.oracle.com/javase/jp/8/api/java/util/stream/Stream.html#of-T...-
+> static <T> Stream<T> of(T... values)
+> 指定された値を要素に持つ、順序付けされた順次ストリームを返します。
+
+```java
+// import static java.util.stream.Collectors.toList;
+
+final String TEST_PATH = "src/com/company";
+List<File> files =
+        Stream.of(new File(TEST_PATH).listFiles())
+                .flatMap(file ->
+                                file.listFiles() == null ?
+                                        Stream.of(file) :
+                                        Stream.of(file.listFiles())
+                )
+                .collect(toList());
+
+files.stream().forEach(System.out::println);
+```
+
+モナド合成？
+
+
 ## 3.8 ファイルの変更を監視
+
+JDK7で追加されたWatchServiceでファイルの変更を監視する
+
+```java
+final String TEST_PATH = "src/com/company";
+final Path path = Paths.get(TEST_PATH);
+
+final WatchService watchService =
+        path.getFileSystem()
+                .newWatchService();
+
+path.register(
+        watchService,
+        StandardWatchEventKinds.ENTRY_MODIFY);
+
+System.out.println("設定完了...監視中....");
+
+final WatchKey watchKey = watchService.poll(
+        1,
+        TimeUnit.MINUTES
+);
+
+System.out.println("poll実行後....");
+
+if (watchKey != null) {
+    watchKey.pollEvents()
+            .stream()
+            .forEach(
+                    event -> System.out.println(
+                            event.context()
+                    )
+            );
+}
+```
+
+1. Path#getFileSystem で　ファイルシステムを取得して
+https://docs.oracle.com/javase/jp/8/api/java/nio/file/Path.html#getFileSystem--
+
+```java
+PathFileSystem getFileSystem()
+```
+
+2. FileSystem#newWatchService で　WatchServiceを生成
+https://docs.oracle.com/javase/jp/8/api/java/nio/file/FileSystem.html#newWatchService--
+
+```java
+public abstract WatchService newWatchService() throws IOException
+```
+
+3. Path#register で 監視サービスに登録
+https://docs.oracle.com/javase/jp/8/api/java/nio/file/Path.html#register-java.nio.file.WatchService-java.nio.file.WatchEvent.Kind...-
+
+```java
+WatchKey register(WatchService watcher,
+                  WatchEvent.Kind<?>... events)
+         throws IOException
+```
+
+4. WatchService#poll で ファイル変更監視（1分間待機）
+https://docs.oracle.com/javase/jp/8/api/java/nio/file/WatchService.html#poll-long-java.util.concurrent.TimeUnit-
+
+```java
+WatchKey poll(long timeout,
+              TimeUnit unit)
+       throws InterruptedException
+```
+
+5. WatchKey#pollEvents で　イベントリストの取得
+http://docs.oracle.com/javase/jp/8/api/java/nio/file/WatchKey.html#pollEvents--
+
+```java
+List<WatchEvent<?>> pollEvents()
+```
 
 ## 3.9 まとめ
