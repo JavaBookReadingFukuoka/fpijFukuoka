@@ -30,7 +30,7 @@ System.out.println("Total of stocks: " + AssetUtil.totalStockValues(assets));
 
 きつい匂いがしてくる。本物のJava使いならこう書くはずだろう？
 
-```
+```java
 public final class AssetUtil {
      public int totalAssetValues(List<Asset> assets, AssetSelector selector) {}
 }
