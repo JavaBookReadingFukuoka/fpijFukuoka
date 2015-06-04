@@ -172,6 +172,8 @@ sortedHeros.forEach(System.out::println);
 //あくましょうぐん さんの戦闘力は 10000 です。
 ```
 
+※ collectメソッドについては3.4で補足あります  
+
 メソッド参照だとみじかいよ
 
 ```java
@@ -180,6 +182,8 @@ List<Hero> sortedHeros = heros
         .sorted(Hero::powerDiff)
         .collect(Collectors.toList());
 ```
+
+### 3.2.2 再利用
 
 ラムダだと逆にも書けるよ（メソッド参照はできないけど）
 
@@ -217,6 +221,15 @@ heros.stream()
 
 min()やmax()はリストに値がないこともあるためOptionalを返します。  
 ifPresentは値がある時のみ実行します。
+
+Stream#max
+>指定されたComparatorに従ってこのストリームの最大要素を返します。これはリダクションの特殊な場合です。
+>これは終端操作です。
+https://docs.oracle.com/javase/jp/8/api/java/util/stream/Stream.html#max-java.util.Comparator-
+```java
+Optional<T> max(Comparator<? super T> comparator)
+```
+
 
 ## 3.3 複数のプロパティによる流暢な比較
 
