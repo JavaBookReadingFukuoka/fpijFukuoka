@@ -2,21 +2,24 @@
 
 ## 3.1 文字列のイテレーション
 
-charsはCharSequenceインタフェースの
-デフォルトメソッドでStringは実装してる
+CharSequenceインタフェースの
+charsデフォルトメソッドをStringクラスは実装してます。
 
 ```java
-public interface CharSequence {
-  public default IntStream chars() { ... }
-}
-
 public final class String
     implements java.io.Serializable, Comparable<String>, CharSequence {
       ...
 }
 ```
 
-なのでこんな風にかけるよ。IntStreamなので数字がでるよ。
+CharSequence#chars  
+> http://docs.oracle.com/javase/jp/8/api/java/lang/CharSequence.html#chars--
+
+```java
+default IntStream chars()
+```
+
+なのでこんな風にかけます。(IntStreamなので数字がでるよ。)
 
 ```java
 "abc".chars().forEach(c -> System.out.print(c));
@@ -25,11 +28,13 @@ public final class String
 // 99
 ```
 
+IntStream#forEach  
+> このストリームの各要素に対してアクションを実行します。
+> これは終端操作です。  
+http://docs.oracle.com/javase/jp/8/api/java/util/stream/IntStream.html#forEach-java.util.function.IntConsumer-
+
 ```java
-// ※ 参考 内部イテレータ
-public interface IntStream extends BaseStream<Integer, IntStream> {
-   void forEach(IntConsumer action);
-}
+void forEach(IntConsumer action)
 ```
 
 ```java
@@ -73,6 +78,13 @@ mapToObjで先に文字コード１個右で表示を準備することもでき
 // c
 // d
 ```
+
+IntStream#mapToObj
+> 指定された関数をこのストリームの要素に適用した結果から構成される、オブジェクト値のStreamを返します。  
+> これは中間操作です。  
+https://docs.oracle.com/javase/jp/8/docs/api/java/util/stream/IntStream.html#mapToObj-java.util.function.IntFunction-
+
+
 
 charsの結果をfilterで小文字のみ対象にした例
 
