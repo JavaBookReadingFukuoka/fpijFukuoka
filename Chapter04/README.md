@@ -275,6 +275,14 @@ public final class Camera {
 
 ## 4.4 defaultメソッドを覗く
 
+ルール 1. サブタイプは自動的にスーパータイプの default メソッドを継承する。
+
+```java
+public interface Super {
+    default void 
+
+
+
 
 ## 4.5 ラムダ式を使った流暢なインタフェース
 
