@@ -240,17 +240,11 @@ Comparator<Hero> ascendingPower = (hero1,hero2)->hero1.powerDiff(hero2);
 ```
 
 Comparator#comparing コンビニエンスメソッドを使う  
+> 型TからComparableソート・キーを抽出する関数を受け取り、そのソート・キーで比較するComparator<T>を返します。
+http://docs.oracle.com/javase/jp/8/api/java/util/Comparator.html#comparing-java.util.function.Function-
 
 ```java
-import static java.util.Comparator.comparing;
-
-public static <T, U extends Comparable<? super U>> Comparator<T> comparing(
-        Function<? super T, ? extends U> keyExtractor)
-{
-    Objects.requireNonNull(keyExtractor);
-    return (Comparator<T> & Serializable)
-        (c1, c2) -> keyExtractor.apply(c1).compareTo(keyExtractor.apply(c2));
-}
+static <T,U extends Comparable<? super U>> Comparator<T> comparing(Function<? super T,? extends U> keyExtractor)
 ```
 
 引数の関数(Function)はラムダ式で書くか
@@ -267,7 +261,14 @@ List<Hero> sortedHeros = heros.stream()
         .sorted(comparing(Hero::getPower));
 ```
 
-thenComparingで並び替え条件を追加する
+Comparator#thenComparingで並び替え条件を追加する
+> Comparableソート・キーを抽出する関数を含む辞書式順序コンパレータを返します。
+http://docs.oracle.com/javase/jp/8/api/java/util/Comparator.html#thenComparing-java.util.function.Function-
+
+```java
+default <U extends Comparable<? super U>> Comparator<T> thenComparing(Function<? super T,? extends U> keyExtractor)
+```
+
 
 ```java
 List<Hero> sortedHeros = heros.stream()
