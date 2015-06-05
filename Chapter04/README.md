@@ -168,22 +168,25 @@ public class YahooFinance {
 
 ## 4.3 ラムダ式を使ったデコレーション
 
-カメラのフィルターを表す実装を GoF の Decorator パターンを使って書くと次のように読みにくいデコレーションコードになる。
+もしもカメラのフィルターを表す実装を GoF の Decorator パターンを使って書いたら。
 
 ```java
 setFilters(new Darker(new Brighter());
 ```
 
+Decorator パターンはとても強力だが、とても面倒なクラスとインタフェースの階層が発生する。
 Java 8 であれば次のようなスマートな記述ができる。
 
 ```
 setFilters(Color::brighter, Color::darker);
 ```
 
+メソッド参照を関数型インタフェースの機能を使って委譲をチェーン化できます。
+
 
 ### 疑問
 
-サンプルコードの実行結果 r に注目。
+ちょいと話が逸れます。サンプルコードの実行結果 r に注目。
 
 ```
 brighter           200 → 255
@@ -191,40 +194,43 @@ darker             200 → 140
 brighter & darker  200 → 255 → 200？  178くらいじゃないかなぁ。。。
 ```
 
-どうやら Function::compose() の解説が誤っている。
+どうやら Function::compose() の仕様が誤っている。
 ここは Function::andThen() を使うのが正しいと思われる。
 
 
 ### キモになる部分
 
 ```java
-    private Function<Color, Color> filter;
+private Function<Color, Color> filter;
 
-    public void setFilters(final Function<Color, Color>... filters) {
-        filter = Stream.of(filters)
-                .reduce((filter, next) -> filter.compose(next))
-                //.orElse(color -> color);
-                .orElseGet(Function::identity);
-    }
+public void setFilters(final Function<Color, Color>... filters) {
+    filter = Stream.of(filters)
+            .reduce((filter, next) -> filter.andThen(next))
+            //.orElse(color -> color);
+            .orElseGet(Function::identity);
+}
 ```
 
 * `Function<Color, Color>... filters` は任意の数だけ Function型の引数を受け取ることができる。
-* Stream API の reduce と Function::compose() を使って一つの Function 型オブジェクトに集約する。
+* Stream API の reduce と Function::andThen() を使って一つの Function 型オブジェクトに集約する。
 
-下記コードは、その下のラムダ式と同じ機能をフィルターとして設定する。
+下記コードは、その下のラムダ式と同じ機能のフィルターを設定する。
 
 ```java
 setFilters(A, B, C, D, E);
 ```
 
 ```java
-(input) -> E.apply(D.apply(C.apply(B.apply(A.apply(input)))));
+Color apply(Color input) {
+    return E.apply(D.apply(C.apply(B.apply(A.apply(input))))));
+}
+
 ```
 
 
 ### compose はきっと andThen の誤り
 
-解説では、
+解説どおりだと、
 
 ```java
     Function<String, String> target = (String t) -> t.concat("->target");
@@ -287,8 +293,8 @@ FluentMailer.send(mailer ->
 
 どこが流暢かというと、
 
-* mailer オブジェクトを new する必要がなく、スコープが明確。
-* メソッドチェーン（またはカスケードメソッドパターン）で mailer が何度も登場しなくなった。
+* mailer オブジェクトを new する必要がなく、mailer オブジェクトの生存期間、スコープが明確。
+* メソッドチェーン（またはカスケードメソッドパターン）で mailer が何度も出てこなくなった。
 
 
 ### メソッドチェーン
@@ -354,54 +360,6 @@ FluentMailer.send(mailer ->
 関数インタフェースの実装でチェック例外を処理する方法は二つ。
 * 例外を内部で処理するか。
 * 内部で例外をキャッチして、非チェック例外として投げるか。
-
-
-### キャッチと再スローの static ヘルパー
-
-こんな感じ？
-独自の throws 付き関数型インタフェースを作らないと駄目な気がする。
-実装してみてから報告します。
-
-```java
-public class Helper {
-    public static Function<T, R> map(Function<T, R> mapper) {
-        return e -> {
-            try {
-                return mapper.apply(e);
-            } catch (Exception ex) {
-                throw new RuntimeException();
-            }
-        };
-    }
-}
-```
-
-```java
-Stream.of("/usr", "/tmp")
-      .map(Helper.map(path -> {
-          return new File(path).getCanonicalPath();
-      })
-      .forEach(System.out::println);
-```
-
-
-### 並列実行時の注意
-
-* 例外は他のスレッドで走っているラムダ式を終了させたり妨害したりすることはない。
-* 並列実行中の複数のスレッドで例外が発生する場合、その中の一つだけが catch ブロックに報告される。
-* 例外の内容が重要であれば、ラムダ式内部で例外を補足しておき、結果の一部としてメインスレッドに返す方がよい。
-
-
-### 独自の throws 付きの関数型インタフェース
-
-独自に高階関数を設計することもできる。
-
-```java
-@FunctionalInterface
-public interface UseInstance<T, X extends Throwable> {
-    void accept(T instance) throws X;
-}
-```
 
 
 ## 4.7 まとめ
