@@ -45,11 +45,15 @@ System.out.println("Total of stocks: " + AssetUtil.totalStockValues(assets));
 public final class AssetUtil {
      public int totalAssetValues(List<Asset> assets, AssetSelector selector) {}
 }
+```
 
+```java
 interface AssetSelector {
      boolean test(Asset asset);
 }
+```
 
+```java
 System.out.println("Total of all assets: " + AssetUtil.totalAssetValues(assets, new AssetSelector() {
     @Override public boolean test(Asset asset) {
         return true;
@@ -79,7 +83,9 @@ AssetSelector は定義済みの java.util.function.Predicate インタフェー
 public final class AssetUtil {
      public int totalAssetValues(List<Asset> assets, Predicate<Asset> assetSelector) {/* 省略 */}
 }
+```
 
+```java
 System.out.println("Total of all assets: " 
                    + AssetUtil.totalAssetValues(assets, asset -> true));
 System.out.println("Total of bonds: " 
@@ -104,7 +110,7 @@ System.out.println("Total of stocks: "
 ### 関数型インタフェースを使って委譲する
 
 株価をリクエストし、その価格と保有株数から合計資産額を計算する。
-株価をリクエストする箇所を委譲し、テスト用の Web サービスのスタブと本物の Web サービスとの統合を示す。
+株価をリクエストする箇所を委譲し、テスト用の Web サービスのスタブを使ってテストする例と本物の Web サービスと統合する例を示す。
 
 ```java
 public class CalculateNAV {
@@ -113,7 +119,7 @@ public class CalculateNAV {
     public CalculateNAV(Function<String, BigDecimal> priceFinder) {
         this.priceFinder = priceFinder;
     }
-    
+
     public BigDecimal computeStockWorth(final String ticker, final int shares) {
         return priceFinder.apply(ticker).multiply(BigDecimal.valueOf(shares));  // 委譲している箇所
     }
@@ -121,29 +127,29 @@ public class CalculateNAV {
 ```
 
 
-### ラムダ式を使ってテストスタブを実装
+### ラムダ式を使ってテストスタブを注入
 
 `ticker -> new BigDecimal("6.01")` が注入される実装。
 
 ```java
-    @Test
-    public void testComputeStockWorth() {
-        CalculateNAV instance = new CalculateNAV(ticker -> new BigDecimal("6.01"));
-        BigDecimal expected = new BigDecimal("6010.00");
-        BigDecimal actual = instance.computeStockWorth("GOOG", 1000);
-        assertEquals(expected, actual);
-    }
+@Test
+public void testComputeStockWorth() {
+    CalculateNAV instance = new CalculateNAV(ticker -> new BigDecimal("6.01"));  // 注入箇所
+    BigDecimal expected = new BigDecimal("6010.00");
+    BigDecimal actual = instance.computeStockWorth("GOOG", 1000);
+    assertEquals(expected, actual);
+}
 ```
 
 
-### メソッド参照を使って本物の実装
+### メソッド参照を使って本物の実装を注入
 
 `YahooFinance::getPrice` が注入される実装。
 
 ```java
-    final CalculateNAV calculateNav = new CalculateNAV(YahooFinance::getPrice);
-    System.out.println(String.format("100 shares of Google worth: $%.2f", 
-            calculateNav.computeStockWorth("GOOG", 100)));
+final CalculateNAV calculateNav = new CalculateNAV(YahooFinance::getPrice);  // 注入箇所
+System.out.println(String.format("100 shares of Google worth: $%.2f", 
+        calculateNav.computeStockWorth("GOOG", 100)));
 ```
 
 ```java
@@ -168,7 +174,7 @@ public class YahooFinance {
 setFilters(new Darker(new Brighter());
 ```
 
-Java 8 であれば次のようなスマートな記述ができる、ということ、を解説してある。
+Java 8 であれば次のようなスマートな記述ができる。
 
 ```
 setFilters(Color::brighter, Color::darker);
@@ -218,14 +224,11 @@ setFilters(A, B, C, D, E);
 
 ### compose はきっと andThen の誤り
 
-[API 仕様](http://docs.oracle.com/javase/jp/8/docs/api/java/util/function/Function.html#compose-java.util.function.Function-)
-
 解説では、
 
 ```java
     Function<String, String> target = (String t) -> t.concat("->target");
     Function<String, String> next = (String t) -> t.concat("->next");
-
     Function<String, String> wrapper = target.compose(next);
     System.out.println(wrapper.apply("input"));
 ```
@@ -243,20 +246,20 @@ input->next->target
 ```
 
 `Function::andThen()` が正しいよね？
+[API 仕様](http://docs.oracle.com/javase/jp/8/docs/api/java/util/function/Function.html#compose-java.util.function.Function-)
 
 
 ### その他
 
 * `.orElse(color -> color)` と `.orElseGet(Function::identity)` は等価。
   [API 仕様](http://docs.oracle.com/javase/jp/8/docs/api/java/util/function/Function.html#identity--)
-
 * インタフェースに default メソッドが追加になった。 compose はその一つ。
 * ちなみにインタフェースで static メソッドを使えるようになった。
 
 
 ## 4.4 defaultメソッドを覗く
 
-次回報します。
+次回報告します。
 
 
 ## 4.5 ラムダ式を使った流暢なインタフェース
@@ -332,6 +335,14 @@ public class FluentMailer {
 }
 ```
 
+```java
+FluentMailer.send(mailer ->
+    mailer.from("build@agiledeveloper.com")
+          .to("venkats@agiledeveloper.com")
+          .subject("build notification")
+          .body("... your code sucks ..."));
+```
+
 ### その他
 
 * サンプルコードの mailer のようにスコープを取得して、スコープ上で作業をして返す。このようなパターンをローンパターンと呼ぶ。
@@ -345,15 +356,10 @@ public class FluentMailer {
 * 内部で例外をキャッチして、非チェック例外として投げるか。
 
 
-### 並列実行時の注意
-
-* 例外は他のスレッドで走っているラムダ式を終了させたり妨害したりすることはない。
-* 並列実行中の複数のスレッドで例外が発生する場合、その中の一つだけが catch ブロックに報告される。
-
-
 ### キャッチと再スローの static ヘルパー
 
 こんな感じ？
+独自の throws 付き関数型インタフェースを作らないと駄目な気がする。
 実装してみてから報告します。
 
 ```java
@@ -368,7 +374,9 @@ public class Helper {
         };
     }
 }
+```
 
+```java
 Stream.of("/usr", "/tmp")
       .map(Helper.map(path -> {
           return new File(path).getCanonicalPath();
@@ -376,7 +384,15 @@ Stream.of("/usr", "/tmp")
       .forEach(System.out::println);
 ```
 
-### throws 付き独自の関数型インタフェース
+
+### 並列実行時の注意
+
+* 例外は他のスレッドで走っているラムダ式を終了させたり妨害したりすることはない。
+* 並列実行中の複数のスレッドで例外が発生する場合、その中の一つだけが catch ブロックに報告される。
+* 例外の内容が重要であれば、ラムダ式内部で例外を補足しておき、結果の一部としてメインスレッドに返す方がよい。
+
+
+### 独自の throws 付きの関数型インタフェース
 
 独自に高階関数を設計することもできる。
 
@@ -386,10 +402,6 @@ public interface UseInstance<T, X extends Throwable> {
     void accept(T instance) throws X;
 }
 ```
-
-### その他
-
-* 
 
 
 ## 4.7 まとめ
