@@ -101,9 +101,10 @@ System.out.println("Total of stocks: "
 * 責任の一部を他のクラスに委譲するのではなく、ラムダ式やメソッド参照に委譲できる。
 
 
-### 関数型インタフェースを使って委譲部分を作成
+### 関数型インタフェースを使って委譲する
 
-コンストラクタから実装を注入する。
+株価をリクエストし、その価格と保有株数から合計資産額を計算する。
+株価をリクエストする箇所を委譲し、テスト用の Web サービスのスタブと本物の Web サービスとの統合を示す。
 
 ```java
 public class CalculateNAV {
@@ -114,7 +115,7 @@ public class CalculateNAV {
     }
     
     public BigDecimal computeStockWorth(final String ticker, final int shares) {
-        return priceFinder.apply(ticker).multiply(BigDecimal.valueOf(shares));
+        return priceFinder.apply(ticker).multiply(BigDecimal.valueOf(shares));  // 委譲している箇所
     }
 }
 ```
