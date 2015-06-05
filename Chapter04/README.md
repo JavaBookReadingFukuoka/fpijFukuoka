@@ -6,7 +6,7 @@
 * ラムダ式を使ったわずか数行のコードで責任の委譲を行い、Decoratorパターンを実装する例
 * 冗長なインタフェースを流暢で直感的なインタフェースに変身させる例
 
-以上を示す。
+以上が４章の内容。
 
 
 ## 4.1 ラムダ式を使った関心の分離
@@ -67,28 +67,31 @@ System.out.println("Total of stocks: " + AssetUtil.totalAssetValues(assets, new 
 }));
 ```
 
-AssetSelectorインタフェースを使えば「何を合計するか」を分離することができる。いわゆるStrategyパターンだ。
+AssetSelector インタフェースを使えば「何を合計するか」を分離することができる。いわゆる Strategy パターン。
 
 
 ### 正しい設計
 
-三つのメソッドをインタフェースを使って一つにし、「何を合計するか」を分離したところまでは良かったが、ここはラムダ式の出番。 AssetSelector は定義済みの java.util.function.Predicate インタフェースを再利用し、次のように書く。
+三つのメソッドをインタフェースを使って一つにし、「何を合計するか」を分離したところまでは良かったが、ここはラムダ式の出番。
+AssetSelector は定義済みの java.util.function.Predicate インタフェースを再利用し、次のように書く。
 
 ```java
 public final class AssetUtil {
      public int totalAssetValues(List<Asset> assets, Predicate<Asset> assetSelector) {/* 省略 */}
 }
 
-System.out.println("Total of all assets: " + AssetUtil.totalAssetValues(assets, asset -> true));
-System.out.println("Total of bonds: " + AssetUtil.totalAssetValues(assets, asset -> asset.getType() == Asset.AssetType.BOND));
-System.out.println("Total of stocks: " + AssetUtil.totalAssetValues(assets, asset -> asset.getType() == Asset.AssetType.STOCK));
+System.out.println("Total of all assets: " 
+                   + AssetUtil.totalAssetValues(assets, asset -> true));
+System.out.println("Total of bonds: " 
+                   + AssetUtil.totalAssetValues(assets, asset -> asset.getType() == Asset.AssetType.BOND));
+System.out.println("Total of stocks: " 
+                   + AssetUtil.totalAssetValues(assets, asset -> asset.getType() == Asset.AssetType.STOCK));
 ```
 
-### その他
+### まとめ
 
 * ラムダ式を使って新たなクラスを作ることなくメソッドレベルでの関心の分離を行うことができる。
-* StrategyのようなパターンをJavaで実装する場合は通常インタフェースとクラスを使用するが、ラムダ式は一歩進んだ設計手法を与えてくれる。
-
+* Strategy のようなパターンを Java で実装する場合、通常インタフェースとクラスを使用するがラムダ式は一歩進んだ設計手法を与えてくれる。
 * このパターンは高階関数を使う開発者が選択ロジックを提供する必要がある。
 * しかし、選択ロジックは変数に格納しておき任意の時点で再利用できる。
 
@@ -99,6 +102,8 @@ System.out.println("Total of stocks: " + AssetUtil.totalAssetValues(assets, asse
 
 
 ### 関数型インタフェースを使って委譲部分を作成
+
+コンストラクタから実装を注入する。
 
 ```java
 public class CalculateNAV {
@@ -117,6 +122,8 @@ public class CalculateNAV {
 
 ### ラムダ式を使ってテストスタブを実装
 
+`ticker -> new BigDecimal("6.01")` が注入される実装。
+
 ```java
     @Test
     public void testComputeStockWorth() {
@@ -129,6 +136,8 @@ public class CalculateNAV {
 
 
 ### メソッド参照を使って本物の実装
+
+`YahooFinance::getPrice` が注入される実装。
 
 ```java
     final CalculateNAV calculateNav = new CalculateNAV(YahooFinance::getPrice);
@@ -146,7 +155,7 @@ public class YahooFinance {
 ### その他
 
 * BufferedReader に追加された Stream を返す lines メソッドが紹介されている。
-* Function::apply() メソッドではチェック例外を throw できないため RuntimeException にラッピングしてある。
+* Function::apply() メソッドではチェック例外を throw できないため RuntimeException にラッピングして再スローしている。
 
 
 
@@ -158,7 +167,7 @@ public class YahooFinance {
 setFilters(new Darker(new Brighter());
 ```
 
-Java 8 であれば次のようなスマートな記述ができる、ということ。
+Java 8 であれば次のようなスマートな記述ができる、ということ、を解説してある。
 
 ```
 setFilters(Color::brighter, Color::darker);
@@ -192,22 +201,18 @@ brighter & darker  200 → 255 → 200？  178くらいじゃないかなぁ。�
     }
 ```
 
-`Function<Color, Color>... filters` は任意の数だけ Function型の引数を受け取ることができる。
-Stream API の reduce と Function::compose() を使って一つの Function 型オブジェクトに集約する。
+* `Function<Color, Color>... filters` は任意の数だけ Function型の引数を受け取ることができる。
+* Stream API の reduce と Function::compose() を使って一つの Function 型オブジェクトに集約する。
 
-例えば、
+下記コードは、その下のラムダ式と同じ機能をフィルターとして設定する。
 
 ```java
 setFilters(A, B, C, D, E);
 ```
 
-というコードは
-
 ```java
 (input) -> E.apply(D.apply(C.apply(B.apply(A.apply(input)))));
 ```
-
-というフィルターを生成する。
 
 
 ### compose はきっと andThen の誤り
