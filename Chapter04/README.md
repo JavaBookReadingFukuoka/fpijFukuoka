@@ -194,7 +194,7 @@ darker             200 → 140
 brighter & darker  200 → 255 → 200？  178くらいじゃないかなぁ。。。
 ```
 
-どうやら Function::compose() の仕様が誤っている。
+どうやら Function::compose() の解説が誤っている。計算の順序が逆。
 ここは Function::andThen() を使うのが正しいと思われる。
 
 
