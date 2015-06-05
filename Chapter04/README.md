@@ -251,7 +251,7 @@ input->target->next
 input->next->target
 ```
 
-`Function::andThen()` が正しいよね？
+`Function::andThen()` を使うのが正しいよね？
 [API 仕様](http://docs.oracle.com/javase/jp/8/docs/api/java/util/function/Function.html#compose-java.util.function.Function-)
 
 
