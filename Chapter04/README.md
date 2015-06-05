@@ -63,7 +63,7 @@ AssetSelectorインタフェースを使えば「何を合計するか」を分�
 
 ### 正しい設計
 
-三つのメソッドをインタフェースを使って一つにし、「何を合計するか」を分離したところまでは良かったのですが、明らかにラムダ式の出番。AssetSelectorは定義済みのjava.util.function.Predicateインタフェースを再利用し、次のように書くこと。
+三つのメソッドをインタフェースを使って一つにし、「何を合計するか」を分離したところまでは良かったが、ここはラムダ式の出番。 AssetSelector は定義済みの java.util.function.Predicate インタフェースを再利用し、次のように書く。
 
 ```java
 public final class AssetUtil {
@@ -85,6 +85,7 @@ System.out.println("Total of stocks: " + AssetUtil.totalAssetValues(assets, asse
 
 * 責任の一部を他のクラスに委譲するのではなく、ラムダ式やメソッド参照に委譲できる。
 
+
 ### 関数型インタフェースを使って委譲部分を作成
 
 ```java
@@ -101,6 +102,7 @@ public class CalculateNAV {
 }
 ```
 
+
 ### ラムダ式を使ってテストスタブを実装
 
 ```java
@@ -114,7 +116,7 @@ public class CalculateNAV {
 ```
 
 
-### メソッド参照を使って実装
+### メソッド参照を使って本物の実装
 
 ```java
     final CalculateNAV calculateNav = new CalculateNAV(YahooFinance::getPrice);
@@ -131,27 +133,29 @@ public class YahooFinance {
 
 ### その他
 
-* 
+* BufferedReader に追加された Stream を返す lines メソッドが紹介されている。
+* Function::apply() メソッドではチェック例外を throw できないため RuntimeException にラッピングしてある。
 
 
 
 ## 4.3 ラムダ式を使ったデコレーション
 
-GoF の Decorator パターンを使うと次のように読みづらいデコレーションコードになるが、
+カメラのフィルターを表す実装を GoF の Decorator パターンを使って書くと次のように読みにくいデコレーションコードになる。
 
 ```java
-setFilter(new Darker(new Brighter());
+setFilters(new Darker(new Brighter());
 ```
 
 Java 8 であれば次のようなスマートな記述ができる、ということ。
 
 ```
-setFilter(Color::brighter, Color::darker);
+setFilters(Color::brighter, Color::darker);
 ```
+
 
 ### 疑問
 
-r に注目。
+サンプルコードの実行結果 r に注目。
 
 ```
 brighter           200 → 255
@@ -160,7 +164,7 @@ brighter & darker  200 → 255 → 200？  178くらいじゃないかなぁ。�
 ```
 
 どうやら Function::compose() の解説が誤っている。
-Function::andThen() を使うのが正しい。
+ここは Function::andThen() を使うのが正しいと思われる。
 
 
 ### キモになる部分
@@ -191,10 +195,12 @@ setFilters(A, B, C, D, E);
 (input) -> E.apply(D.apply(C.apply(B.apply(A.apply(input)))));
 ```
 
-というデコレーターを生成する。
+というフィルターを生成する。
 
 
-### compose の解説
+### compose はきっと andThen の誤り
+
+[API 仕様](http://docs.oracle.com/javase/jp/8/docs/api/java/util/function/Function.html#compose-java.util.function.Function-)
 
 解説では、
 
@@ -212,83 +218,163 @@ setFilters(A, B, C, D, E);
 input->target->next
 ```
 
-のはずだか実際には、
+になるはずだか実際には、
 
 ```
 input->next->target
 ```
 
-`Function::andThen()` を使うことで解説どおりの動作になる。
-
-
-```java
-public final class Camera {
-
-    private Function<Color, Color> filter;
-
-    public Camera() {
-        setFilters();
-    }
-
-    public void setFilters(final Function<Color, Color>... filters) {
-        filter = Stream.of(filters)
-                .reduce((filter, next) -> filter.compose(next))
-                //.orElse(color -> color);
-                .orElseGet(Function::identity);
-    }
-
-    public Color capture(final Color inputColor) {
-        final Color processedColor = filter.apply(inputColor);
-        return processedColor;
-    }
-
-    public static void main(String[] args) {
-        final Camera camera = new Camera();
-        final Consumer<String> printCaptured
-                = (filterInfo)
-                -> System.out.println(String.format(
-                                "with %s: %s",
-                                filterInfo,
-                                camera.capture(new Color(200, 100, 200))));
-
-        printCaptured.accept("no filter");
-
-        camera.setFilters(Color::brighter);
-        printCaptured.accept("brighter filter");
-
-        camera.setFilters(Color::darker);
-        printCaptured.accept("darker filter");
-
-        camera.setFilters(Color::brighter, Color::darker);
-        printCaptured.accept("brighter & darker filter");
-    }
-
-}
-```
+`Function::andThen()` が正しいよね？
 
 
 ### その他
 
-* インタフェースに default メソッドが追加になった。
-* インタフェースで static メソッドを使えるようになった。
+* `.orElse(color -> color)` と `.orElseGet(Function::identity)` は等価。
+  [API 仕様](http://docs.oracle.com/javase/jp/8/docs/api/java/util/function/Function.html#identity--)
+
+* インタフェースに default メソッドが追加になった。 compose はその一つ。
+* ちなみにインタフェースで static メソッドを使えるようになった。
 
 
 ## 4.4 defaultメソッドを覗く
-
-ルール 1. サブタイプは自動的にスーパータイプの default メソッドを継承する。
-
-```java
-public interface Super {
-    default void 
-
 
 
 
 ## 4.5 ラムダ式を使った流暢なインタフェース
 
+次のような mailer が何度も出てくるうえ、mailer オブジェクトの生存期間が分からないようなうるさいコードを、
+
+```java
+Mailer mailer = new Mailer();
+mailer.from("build@agiledeveloper.com");
+mailer.to("venkats@agiledeveloper.com");
+mailer.subject("build notification");
+mailer.body("... your code sucks ...");
+mailer.send();
+```
+
+こんな流暢なコードにしましょう、という話し。
+
+```java
+FluentMailer.send(mailer ->
+    mailer.from("build@agiledeveloper.com")
+          .to("venkats@agiledeveloper.com")
+          .subject("build notification")
+          .body("... your code sucks ..."));
+```
+
+どこが流暢かというと、
+
+* mailer オブジェクトを new する必要がなく、スコープが明確。
+* メソッドチェーン（またはカスケードメソッドパターン）で mailer が何度も登場しなくなった。
+
+
+### メソッドチェーン
+
+各メソッドが this を返すことで読み出しをチェーン化する。
+
+```java
+public class MailBuilder {
+    public MailBuilder from(final String address) {/* ... */ return this;}
+    public MailBuilder to(final String address) {/* ... */ return this;}
+    public MailBuilder subject(final String line) {/* ... */ return this;}
+    public MailBuilder body(final String message) {/* ... */ return this;}
+    public void send() { System.out.println("sending..."); }
+}
+
+new MailBuilder()
+    .from("build@agiledeveloper.com")
+    .to("venkats@agiledeveloper.com")
+    .subject("build notification")
+    .body("... your code sucks ...")
+    .send();
+```
+
+ただし、new キーワードが API の可読性と流暢さを低減させている。
+new からの参照を保持することや、その参照からチェーンを続けることを阻止しない。
+
+
+### 流暢な設計
+
+```java
+public class FluentMailer {
+    private FluentMailer() {}
+
+    public FluentMailer from(final String address) {/* ... */ return this;}
+    public FluentMailer to(final String address) {/* ... */ return this;}
+    public FluentMailer subject(final String line) {/* ... */ return this;}
+    public FluentMailer body(final String message) {/* ... */ return this;}
+
+    public static void send(final Consumer<FluentMailer> block) {
+        final FluentMailer mailer = new FluentMailer();
+        block.accept(mailer);
+        System.out.println("sending...");
+    }
+}
+```
+
+### その他
+
+* サンプルコードの mailer のようにスコープを取得して、スコープ上で作業をして返す。このようなパターンをローンパターンと呼ぶ。
+* メーラーの設定、データベース接続のパラメータ設定など、インスタンスの連続した状態を管理下におきつつ構築する必要のある場合に有用。
+
 
 ## 4.6 例外処理
+
+関数インタフェースの実装でチェック例外を処理する方法は二つ。
+* 例外を内部で処理するか。
+* 内部で例外をキャッチして、非チェック例外として投げるか。
+
+
+### 並列実行時の注意
+
+* 例外は他のスレッドで走っているラムダ式を終了させたり妨害したりすることはない。
+* 並列実行中の複数のスレッドで例外が発生する場合、その中の一つだけが catch ブロックに報告される。
+
+
+### キャッチと再スローの static ヘルパー
+
+こんな感じ？
+実装してみてから報告します。
+
+```
+public class Helper {
+    public static Function<T, R> map(Function<T, R> mapper) {
+        return e -> {
+            try {
+                return mapper.apply(e);
+            } catch (Exception ex) {
+                throw new RuntimeException();
+            }
+        };
+    }
+}
+
+Stream.of("/usr", "/tmp")
+      .map(Helper.map(path -> {
+          return new File(path).getCanonicalPath();
+      })
+      .forEach(System.out::println);
+```
+
+### throws 付き独自の関数型インタフェース
+
+
+
+```java
+@FunctionalInterface
+public interface UseInstance<T, X extends Throwable> {
+    void accept(T instance) throws X;
+}
+
+
+### その他
+
 
 
 ## 4.7 まとめ
 
+* ラムダ式は強力かつ軽量なデザインツールである。
+* 関数型インタフェースによる委譲
+* ラムダ式を使ってオブジェクトの生存期間を明確にする。
+* ただし、例外処理は注意深く行うこと。
