@@ -240,7 +240,8 @@ Comparator<Hero> ascendingPower = (hero1,hero2)->hero1.powerDiff(hero2);
 ```
 
 Comparator#comparing コンビニエンスメソッドを使う  
-> 型TからComparableソート・キーを抽出する関数を受け取り、そのソート・キーで比較するComparator<T>を返します。
+> 型TからComparableソート・キーを抽出する関数を受け取り、  
+> そのソート・キーで比較するComparator<T>を返します。  
 http://docs.oracle.com/javase/jp/8/api/java/util/Comparator.html#comparing-java.util.function.Function-
 
 ```java
@@ -325,18 +326,11 @@ collectの引数は左から...
 けどコード内でArrayListの状態変更を行わない  
 スレッドセーフになるよ  
 
-でも長いのでCollectors#toListを使う
+でも長いので Collectors#toList を使う
 
-```java
-public static <T>
-Collector<T, ?, List<T>> toList() {
-    return new CollectorImpl<>(
-      (Supplier<List<T>>) ArrayList::new,
-       List::add,
-       (left, right) -> { left.addAll(right); return left; },
-       CH_ID);
-}
-```
+> 入力要素を新しいListに蓄積するCollectorを返します  
+https://docs.oracle.com/javase/jp/8/docs/api/java/util/stream/Collectors.html
+
 
 ```java
 List<Hero> power1000AndOver = heros.stream()
@@ -346,7 +340,7 @@ List<Hero> power1000AndOver = heros.stream()
 power1000AndOver.forEach(System.out::println);
 ```
 
-Collectorsには他にも色々あるよ
+Collectors には他にも色々あるよ
 
 - toSet
 - toMap
@@ -357,7 +351,14 @@ Collectorsには他にも色々あるよ
 - maxBy
 - groupingBy
 
-groupingByでパワー別グループに分けてみた
+Collectors#groupingBy でパワー別グループに分けてみた
+> 分類関数に従って要素をグループ化し、結果をMapに格納して返す、  
+> T型の入力要素に対する「グループ化」操作を実装したCollectorを返します。  
+https://docs.oracle.com/javase/jp/8/docs/api/java/util/stream/Collectors.html#groupingBy-java.util.function.Function-
+
+```java
+public static <T,K> Collector<T,?,Map<K,List<T>>> groupingBy(Function<? super T,? extends K> classifier)
+```
 
 ```java
 private final List<Hero> heros = Arrays.asList(
@@ -383,7 +384,12 @@ powerGroup.entrySet().forEach(System.out::println);
 ```
 
 
-さらにmappingで名前だけ抽出
+Collectors#groupingBy でさらにmappingで名前だけ抽出
+
+> 分類関数に従って要素をグループ化した後、指定された下流Collectorを使って特定のキーに  
+> 関連付けられた値のリダクション操作を実行する、  
+> T型の入力要素に対するカスケード「グループ化」操作を実装したCollectorを返します。  
+https://docs.oracle.com/javase/jp/8/docs/api/java/util/stream/Collectors.html#groupingBy-java.util.function.Function-
 
 ```java
 Map<Integer,List<String>> powerGroupNameList = heros.stream()
@@ -399,7 +405,15 @@ powerGroupNameList.entrySet().forEach(System.out::println);
 // 90=[うるふまん]
 ```
 
-ちょっと寄り道(mappingだけ試した)
+ちょっと寄り道( Collectors#mapping だけ試した)
+> U型の要素を受け取るCollectorがT型の要素を受け取れるように適応させるため、
+> 各入力要素にマッピング関数を適用した後で蓄積を行うようにします。
+https://docs.oracle.com/javase/jp/8/docs/api/java/util/stream/Collectors.html#mapping-java.util.function.Function-java.util.stream.Collector-
+
+```java
+public static <T,U,A,R> Collector<T,?,R> mapping(Function<? super T,? extends U> mapper,
+                                                 Collector<? super U,A,R> downstream)
+```
 
 ```java
 List<String> nameList = heros.stream()
@@ -415,7 +429,14 @@ nameList.forEach(System.out::println);
 // ばっふぁろーまん
 ```
 
-ちょっと寄り道(BinaryOperator.maxBy)で最強を探す
+ちょっと寄り道( BinaryOperator#maxBy )で最強を探す
+> 指定されたComparatorに従って
+> 2つの要素の大きいほうを返すBinaryOperatorを返します。
+http://docs.oracle.com/javase/jp/8/docs/api/java/util/function/BinaryOperator.html
+
+```java
+static <T> BinaryOperator<T> maxBy(Comparator<? super T> comparator)
+```
 
 ```java
 Optional<Hero> saikyo = heros.stream()
@@ -423,6 +444,15 @@ Optional<Hero> saikyo = heros.stream()
 
 saikyo.ifPresent(System.out::println);
 // あくましょうぐん さんの戦闘力は 10000 です。
+```
+
+Stream#reduce
+> 結合的な累積関数を使ってこのストリームの要素に対してリダクションを実行し、  
+> リデュースされた値が存在する場合はその値を記述するOptionalを返します。
+https://docs.oracle.com/javase/jp/8/api/java/util/stream/Stream.html#reduce-java.util.function.BinaryOperator-
+
+```java
+Optional<T> reduce(BinaryOperator<T> accumulator)
 ```
 
 頭文字が同じで一番強いのを探す
@@ -443,6 +473,16 @@ saikyoInGroup.entrySet().forEach(System.out::println);
 // う=Optional[うぉーずまん さんの戦闘力は 100 です。]
 // ろ=Optional[ろびんますく さんの戦闘力は 100 です。]
 ```
+
+Collectors#reducing
+> 指定されたBinaryOperatorの下で入力要素のリダクションを
+> 実行するCollectorを返します。結果はOptional<T>として記述されます。
+https://docs.oracle.com/javase/jp/8/docs/api/java/util/stream/Collectors.html#reducing-java.util.function.BinaryOperator-
+
+```java
+public static <T> Collector<T,?,Optional<T>> reducing(BinaryOperator<T> op)
+```
+
 
 ## 3.5 ディレクトリの全ファイルをリスト
 
