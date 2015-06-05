@@ -1,18 +1,27 @@
 # ４章　ラムダ式で設計する
 
+インタフェース、クラス階層、匿名内部クラスを簡潔なコードに置き換えることができる。
+
+* 機能からロジックを簡単に分離し拡張をより簡単にするためにラムダ式を使用する例
+* ラムダ式を使ったわずか数行のコードで責任の委譲を行い、Decoratorパターンを実装する例
+* 冗長なインタフェースを流暢で直感的なインタフェースに変身させる例
+
+以上を示す。
+
+
 ## 4.1 ラムダ式を使った関心の分離
 
-* ラムダ式を使って新たなクラスを作ることなくメソッドレベルでの関心の分離を行うことができる。
-* StrategyのようなパターンをJavaで実装する場合は通常インタフェースとクラスを使用するが、ラムダ式は一歩進んだ設計手法を与えてくれる。
+[高階関数](http://ja.wikipedia.org/wiki/高階関数)を使うことでクラス階層を必要とせずコードの再利用ができる。
+
 
 ### 間違った設計
 
 証券(BOND)と株式(STOCK)を表すことができる資産(Asset)クラスがある。
 その価値を合計するメソッド(totalAssetValues)を資産ユーティリティ(AssetUtil)クラスに定義した。
 
-その後、証券(BOND)だけの価値を合計するメソッド(totalBondValues)と株式(STOCK)だけの価値を合計するメソッド(totalStockValues)が必要となりそれぞれ定義した。
+その後、証券(BOND)だけの価値を合計するメソッド(totalBondValues)と株式(STOCK)だけの価値を合計するメソッド(totalStockValues)が必要となりそれぞれ追加した。
 
-結果としてできたクラス定義はこんな感じ。
+結果としてできたクラスはこんな感じ。
 
 ```java
 public final class AssetUtil {
@@ -30,7 +39,7 @@ System.out.println("Total of bonds: " + AssetUtil.totalBondValues(assets));
 System.out.println("Total of stocks: " + AssetUtil.totalStockValues(assets));
 ```
 
-本物のJava使いならこう書くはず。
+本物のJava使いならこう書くはず。（でしょ？ｗ）
 
 ```java
 public final class AssetUtil {
@@ -76,6 +85,9 @@ System.out.println("Total of stocks: " + AssetUtil.totalAssetValues(assets, asse
 ```
 
 ### その他
+
+* ラムダ式を使って新たなクラスを作ることなくメソッドレベルでの関心の分離を行うことができる。
+* StrategyのようなパターンをJavaで実装する場合は通常インタフェースとクラスを使用するが、ラムダ式は一歩進んだ設計手法を与えてくれる。
 
 * このパターンは高階関数を使う開発者が選択ロジックを提供する必要がある。
 * しかし、選択ロジックは変数に格納しておき任意の時点で再利用できる。
@@ -238,6 +250,7 @@ input->next->target
 
 ## 4.4 defaultメソッドを覗く
 
+次回報します。
 
 
 ## 4.5 ラムダ式を使った流暢なインタフェース
@@ -337,7 +350,7 @@ public class FluentMailer {
 こんな感じ？
 実装してみてから報告します。
 
-```
+```java
 public class Helper {
     public static Function<T, R> map(Function<T, R> mapper) {
         return e -> {
@@ -359,17 +372,18 @@ Stream.of("/usr", "/tmp")
 
 ### throws 付き独自の関数型インタフェース
 
-
+独自に高階関数を設計することもできる。
 
 ```java
 @FunctionalInterface
 public interface UseInstance<T, X extends Throwable> {
     void accept(T instance) throws X;
 }
-
+```
 
 ### その他
 
+* 
 
 
 ## 4.7 まとめ
