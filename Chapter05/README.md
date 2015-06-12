@@ -1,6 +1,9 @@
 # ５章　外部リソースを扱う
 
-「外部リソース」を使用する場合は，ガベージコレクション(GC)は開発者の責任の範囲。
+* リソースとは？
+  * 「資源」を意味する。原義は"[to rise](http://www.oxforddictionaries.com/definition/english/resource)"（昇る，増大する）
+  * 資源は「有限」であるという問題
+  * 計算資源（CPUやメモリ）は有限なので枯渇しないように「解放」しなげればならない
 
 * 外部リソースとは?
   * データベース接続
@@ -9,7 +12,11 @@
   * ネイティブリソース
   * [JDK close()メソッド一覧 - GrepCode](http://grepcode.com/search?query=close%28%29&start=0&r=repository.grepcode.com%24java%24root&entity=method&n=)
 
+「外部リソース」を使用する場合は，ガベージコレクション(GC)は開発者の責任の範囲。
+
 ## 5.1 リソースの解放
+
+**【問題】もしリソースを開放しなければ，何がどうなるのか？**
 
 ベンカット・スブラマニアン（著者）の経験： 
 
@@ -21,8 +28,8 @@
 
 JJUG CCC 2015 Springのケース：
 
-* **JUGGの発表資料「ほんとうに便利だった業務で使えるJava SE8新機能」でファイル処理のリソースの解放漏れ？**
-  * 業務にJava8を導入したJUGGの発表が話題に！
+* **JJUGの発表資料「ほんとうに便利だった業務で使えるJava SE8新機能」でファイル処理のリソースの解放漏れ？**
+  * 業務にJava8を導入したJJUGの発表が話題に！
     * [ほんとうに便利だった業務で使えるJava SE8新機能（JJUG CCC 2015 Spring）, p.33 - SlideShare](http://www.slideshare.net/yuukifukuda378/ss-46878413)
   * 発表翌日（2015/04/12）に，「33ページのコードにはリソース解放漏れがあります」と指摘が発生
     * [だから、あれほどFiles#lines(Path)を使うときはtry-with-resourcesでちゃんと包めといったのに… #jjug #ccc_f2 - mike-neckのブログ](http://mike-neck.hatenadiary.com/entry/2015/04/12/210000)
@@ -47,36 +54,22 @@ JJUG CCC 2015 Springのケース：
 
 ### 5.1.1 問題を覗いてみる
 
-外部リソースを解放するためにfinalizeを実装したが，JVMが十分にメモリを確保しているので，finalizeが呼ばれず，アプリの動作が不安定になる問題。
+外部リソースを参照すると計算資源（CPUやメモリ）を消費する。しかし計算資源は有限であるという問題がある。
+有限資源を管理するために，GCに任せてリソースを解放するfinalizeを実装したが，JVMは十分にメモリを確保している（供給の過剰）ため，
+GCがfinalizeを呼ばず，アプリの動作が不安定になるまで資源を消費し続ける問題。
 
-メモリの確保が不十分な状態 "-Xms1m -Xmx1m" でGC(finalize)が呼ばれる様子を見てみよう。 
+メモリの確保が不十分な状態 "-Xms1m -Xmx1m" をお膳立てして，GC(finalize)が呼ばれる様子を見てみよう。 
   * [FileWriterARM_5_1_1.java](./resources/FileWriterARM_5_1_1.java)
-
-### 5.1.2 リソースを閉じる
-
-JVMに任せたfinalizeは不安定なので，リソース解放は明示的にclose()を呼びだそう。 
-  * [FileWriterARM_5_1_2.java](./resources/FileWriterARM_5_1_2.java)
-
-close()は例外が発生した場合も確実に呼ばれるのか？ - **NO!**
-
-### 5.1.3 確実にリソースを解放する
-
-**try-finally**で確実にリソースを閉じる。
-  * [FileWriterARM_5_1_3.java](./resources/FileWriterARM_5_1_3.java)
-
-外部リソースの操作中に例外が発生しても確実にリソースを解放できるようになった。
-
-だが**コードがsmelly（臭う）** - [code smell](http://ja.wikipedia.org/wiki/%E3%82%B3%E3%83%BC%E3%83%89%E3%81%AE%E8%87%AD%E3%81%84)
 
 ### 5.1.4 自動リソース管理（ARM）の使用
 
 Java 7で導入された**ARM(Automatic Resource Management)**を使えばOK？
 
 * ARMとは？
-  * AutoClosableをimplementsすると，JVMによってclose()が自動で呼ばれる仕組み。開発者は明示的にcloseを書かなくても良い
-    * try-with-resources構文と呼ぶ
-    * [FileWriterARM_5_1_4.java](./resources/FileWriterARM_5_1_4.java)
+  * AutoClosableをimplementsすると，JVMによって自動でclose()が呼ばれる仕組み。開発者は明示的にcloseを書かなくても良い
+  * try-with-resources構文と呼ぶ
   * ARMは非常に完結で魅力的
+* [FileWriterARM_5_1_4.java](./resources/FileWriterARM_5_1_4.java)
 
 しかし，**ARMは開発者が忘れずにtry-with-resourcesを記述しなければいけない**。
 
@@ -86,10 +79,6 @@ Java 7で導入された**ARM(Automatic Resource Management)**を使えばOK？
 ## 5.2 ラムダ式でリソース解放
 
 開発者がtry-with-resources構文を使用しなくても，ラムダ式を使えば自動的にリソース解放ができるAPIを記述できる！？
-
-### 5.2.1 リソース解放を行うクラスの準備
-
-外部リソースを使うが，ARMを使わない(AutoClosableをimplementsしない)クラスを準備する。
 
 ### 5.2.2 高階関数の使用
 
@@ -122,7 +111,7 @@ public static void use(final String fileName, final UseInstance<FileWriterEAM_5_
 
 ### 5.2.3 インスタンス解放に使用
 
-ラムダ式はブロック（{ }）で複数行のコードも書くことができる
+ラムダ式はブロック{ }で複数行のコードも書くことができる
   * [FileWriterARM_5_2_3.java](./resources/FileWriterEAM_5_2_3.java)
 
 ```java
@@ -153,27 +142,14 @@ use("eam.txt", writerEAM -> {
 Java 5でアノテーションが導入されると，JUnitは即座にそれを採用した。
 アノテーションによるテストは簡潔すぎてわかりづらい。ラムダ式で変える。
 
-### 5.4.1 try/catchで例外テスト
-
-try/catchを使ったテストはとても冗長。
-
-* [RodCutterTest_5_4_1.java](./resources/RodCutterTest_5_4_1.java)
-
-### 5.4.2 アノテーションを使った例外テスト
-
-アノテーションを使ったテストは意図しないメソッドで例外が発生してもテストに合格する可能性がある。
-
-* [RodCutterTest_5_4_2.java](./resources/RodCutterTest_5_4_2.java)
-
-### 5.4.3 例外テストにラムダ式を使用
-
-ラムダ式を使うと簡潔で，意図したメソッドでの例外でテストが検証される。
-
-* [RodCutterTest_5_4_3.java](./resources/RodCutterTest_5_4_3.java)
-
 ### 5.4.4 テストの実行
 
-どのテストコードが一番良い（正確性，保守性，可読性等）ですか？
+* try/catchを使ったテストはとても冗長。
+* アノテーションを使ったテストは意図しないメソッドで例外が発生してもテストに合格する可能性がある。
+* ラムダ式を使うと簡潔で，意図したメソッドでの例外でテストが検証される。
+
+
+どのテストコードが一番良い？
 
 ```java
   @Test public void VerboseExceptionTest() {
