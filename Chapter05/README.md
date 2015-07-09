@@ -1,5 +1,11 @@
 # ５章　外部リソースを扱う
 
+**_他人の負荷を軽くする者に，無用な者はいない。_** ーCharles Dickens [『互いの友』(Bk. III, Ch. 9)](https://en.wikiquote.org/wiki/Charles_Dickens#Our_Mutual_Friend_.281864-1865.29)
+
+（主人公のジョン・ハーモンはゴミ集めで財を成した老ハーモンの息子）
+
+--
+
 * リソースとは？
   * 「資源」を意味する。原義は"[to rise](http://www.oxforddictionaries.com/definition/english/resource)"（昇る，増大する）
   * 資源は「有限」であるという問題
@@ -99,8 +105,8 @@ public interface UseInstance<T, X extends Throwable> {
 ```
 
 ```java
-public static void use(final String fileName, final UseInstance<FileWriterEAM_5_2_3, IOException> block) throws IOException {
-    final FileWriterEAM_5_2_3 writerEAM = new FileWriterEAM_5_2_3(fileName);
+public static void use(final String fileName, final UseInstance<FileWriterEAM, IOException> block) throws IOException {
+    final FileWriterEAM writerEAM = new FileWriterEAM(fileName);
     try {
         block.accept(writerEAM);
     } finally {
@@ -134,7 +140,7 @@ use("eam.txt", writerEAM -> {
 
 ロックしたら確実にアンロックする必要がある。（Aしたら確実にBする必要がある）Execute Around Methodパターンが使えそう！
 
-  * [Locking_5_3.java](./resources/Locker_5_3.java)
+  * [Locking_5_3.java](./resources/Locking_5_3.java)
 
 
 ## 5.4 簡潔な例外テストの生成
