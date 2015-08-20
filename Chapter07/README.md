@@ -38,7 +38,28 @@
 
 
 ## 7.2 メモ化でスピードアップ
+### 7.2.1 最適化問題
+　問題説明
+### 7.1.2 何の変哲もない再帰  
+　例えば、n=5の場合  
+　*f(4)+f(1) , f(3)+f(2) , f(2)+f(3) , f(1,4)*  
+　のうち最も大きいものが答えになる。
+
+　このような問題のように問題全体を解くために、部分問題の計算方法を用いる方法を**分割統治法**という。これに、部分問題の答えを保存しておくメモ化を合わせたものを一般的に**動的計画法**と呼ぶ。
+
+　*maxProfit(5),maxProfit(22)*  → [コード](https://github.com/HM-MEA/Functional-c7/blob/master/src/main/java/recur/fpij/RodCutterBasic.java)
+
+### 7.2.3 計算結果のメモ化
+　要するに、計算結果を保存しておくためのHashMapを用意しておき、それをメモとして用いながら処理を行えば良い。  
+　今回の場合、実際の処理を行うfunctionと、メモを検索するfunctionの二種類が存在し、お互いに相手を呼び合う形になっている。少し処理の流れがわかりづらいが、基本的には
+
+あるn = kの場合の長さを知りたい場合は、まずメモを探してその答えが存在しているかを確認し、あればそれを返す。なければ処理を行う。その中でkより小さいnの値を求める呼び出しを行う→最初へ、
+
+という感じ。
+
+*maxProfitMemo(22),maxProfitMemo2(22,new HashMap())* → [コード](https://github.com/HM-MEA/Functional-c7/blob/master/src/main/java/recur/fpij/RodCutterBasic.java)
 
 
 ## 7.3 まとめ
+　p,167
 
