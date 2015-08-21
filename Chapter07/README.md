@@ -55,7 +55,8 @@
 
 あるn = kの場合の長さを知りたい場合は、まずメモを探してその答えが存在しているかを確認し、あればそれを返す。なければ処理を行う。その中でkより小さいnの値を求める呼び出しを行う→最初へ、
 
-という感じ。
+という感じ。  
+computeIfAbsent()が便利。
 
 *maxProfitMemo(22),maxProfitMemo2(22,new HashMap())* → [コード](https://github.com/HM-MEA/Functional-c7/blob/master/src/main/java/recur/fpij/RodCutterBasic.java)
 
