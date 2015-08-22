@@ -64,3 +64,30 @@ computeIfAbsent()が便利。
 ## 7.3 まとめ
 　p,167
 
+
+## 追加なお話のサンプルコード
+本の説明は多少飛躍があったので、段階に分けた変形の紹介。
+
+### 1) NaiveFactorial.java
+階乗の素朴な再帰呼び出しによる実装。<br>
+https://gist.github.com/TakayukiKando/94e1de4a4f2cc4446008#file-naivefactorial-java
+
+### 2) TailRecFactorial.java
+末尾再帰の形へ変形。<br>
+https://gist.github.com/TakayukiKando/94e1de4a4f2cc4446008#file-tailrecfactorial-java
+
+### 3) ContinuationLoopFactorial.java
+継続を表現するクラスを使った反復へ変形。<br>
+https://gist.github.com/TakayukiKando/94e1de4a4f2cc4446008#file-continuationloopfactorial-java
+
+### 4) Continuation2LoopFactorial.java
+継続をラムダ式で簡易に定義できるよう変形し、計算の終了を表す「番兵」専用の継続クラスを導入、isComplete()は定数を返すように。<br>
+https://gist.github.com/TakayukiKando/94e1de4a4f2cc4446008#file-continuationstreamfactorial-java
+
+### 5) ContinuationStreamFactorial.java
+反復を継続のストリームを利用する形へ変形。<br>
+https://gist.github.com/TakayukiKando/94e1de4a4f2cc4446008#file-continuationstreamfactorial-java
+
+### ※ Utils.java
+結果を表示し時間を計測する共通メソッドを備えたクラス<br>
+https://gist.github.com/TakayukiKando/94e1de4a4f2cc4446008#file-utils-java
