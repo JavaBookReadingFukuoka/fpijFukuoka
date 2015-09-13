@@ -20,5 +20,6 @@
 * [2015/05/08 vol1] (http://www.zusaar.com/event/15007006)：１章〜２章
 * [2015/06/05 vol2] (http://www.zusaar.com/event/14017003)：３章〜４章途中
 * [2015/07/10 vol3] (http://www.zusaar.com/event/9147003)：５章〜６章
-* 開催予定[2015/08/21 vol4] (http://www.zusaar.com/event/15137003)：４章続き＆７章～
+* [2015/08/21 vol4] (http://www.zusaar.com/event/15137003)：７章
+* 開催予定[2015/09/18 vol5] (http://jbr-fukuoka.connpass.com/event/20116/)：８章
 
