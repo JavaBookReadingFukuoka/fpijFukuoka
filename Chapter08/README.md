@@ -46,13 +46,56 @@ MapResuceパターンは単純でマルチコアプロセッサを有効活用�
 
 例8-8はループが３回登場。
 
+```Java
+final List<StockInfo> stocks = new ArrayList<>();
+for (String symbol : Tickers.symbol) {
+    stocks.add(StockUtil.getPrice(symbol));
+}
+
+final List<StockInfo> stocksPriceUnder500 = new ArrayList<>();
+final Predicate<StockInfo> isPriceLessThan500 = StockUtil.isPriceLessThan(500);
+for (StockInfo stock : stocks) {
+    if (isPriceLessThan500.test(stock))
+        stocksPriceUnder500.add(stock);
+}
+
+StockInfo highPriced = new StockInfo("", BigDecimal.ZERO);
+for (StockInfo stock : stocks) {
+    highPriced = StockUtil.pickHigh(highPriced, stock);
+}
+
+System.out.println("High priced under $500 is " + highPriced);
+```
+
 例8-9ではループを１回にまとめてみる。
+
+```Java
+StockInfo highPriced = new StockInfo("", BigDecimal.ZERO);
+final Predicate<StockInfo> isPriceLessThan500 = StockUtil.isPriceLessThan(500);
+for (String symbol : Tickers.symbol) {
+    StockInfo stockInfo = StockUtil.getPrice(symbol);
+    if (isPriceLessThan500.test(stockInfo))
+        highPriced = StockUtil.pickHigh(highPriced, stockInfo);
+}
+System.out.println("High priced under $500 is " + highPriced);
+```
 
 ・・・が、例8-9のコードはコード量とループ数は減ったものの、再利用が出来ない。
 
 ### 8.2.3 そして関数型へ
 
 例8-10で関数型のコードとして書く。
+例8-11とまとめると・・・
+
+```Java
+final StockInfo highPriced =
+    Tickers.symbol.stream()
+        .map(StockUtil::getPrice)
+        .filter(StockUtil.isPriceLessThan(500))
+        .reduce(StockUtil::pickHigh)
+        .get();
+System.out.println("High priced under $500 is " + highPriced);
+```
 
 図8-2はmap-filter-reduceの図示。並列化が可能に見える事に着目。
 
@@ -60,6 +103,11 @@ MapResuceパターンは単純でマルチコアプロセッサを有効活用�
 ## 8.3 並列化への飛躍
 
 準備が整っていれば、parallelStream()を使うだけで容易に並列化できる。
+
+```Java
+    Tickers.symbol.stream()         // 並列化無し
+    Tickers.symbol.parallelStream() // 並列化
+```
 
 ただし、並列化は必ずしも最適ではない。並列化が良い場合があるというだけ。
 
